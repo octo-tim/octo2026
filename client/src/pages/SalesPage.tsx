@@ -1204,6 +1204,7 @@ export default function SalesPage() {
                 <TableHead className={`text-right w-[90px] ${inputCellStyle}`}>2주</TableHead>
                 <TableHead className={`text-right w-[90px] ${inputCellStyle}`}>3주</TableHead>
                 <TableHead className={`text-right w-[90px] ${inputCellStyle}`}>4주</TableHead>
+                <TableHead className={`text-right w-[90px] ${inputCellStyle}`}>5주</TableHead>
                 <TableHead className="text-right w-[100px] bg-blue-50">월누계</TableHead>
                 <TableHead className="text-right w-[80px] bg-green-50">달성률</TableHead>
               </TableRow>
@@ -1261,6 +1262,16 @@ export default function SalesPage() {
                         disabled={!canEditSales}
                       />
                     </TableCell>
+                    <TableCell className={inputCellStyle}>
+                      <Input
+                        type="text"
+                        value={formatNumber(weekData.week5 ?? 0)}
+                        onChange={(e) => handleWeeklyInput(config.division, item, 'week5', e.target.value)}
+                        className="h-8 text-right font-mono bg-transparent border-0 focus:ring-1 focus:ring-pink-400"
+                        placeholder="0"
+                        disabled={!canEditSales}
+                      />
+                    </TableCell>
                     <TableCell className="text-right font-mono font-semibold bg-blue-50">{formatNumber(cumulative)}</TableCell>
                     <TableCell className="text-right font-mono bg-green-50">{rate}%</TableCell>
                   </TableRow>
@@ -1275,6 +1286,7 @@ export default function SalesPage() {
                 <TableCell className="text-right font-mono">{formatNumber(totals.week2)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(totals.week3)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(totals.week4)}</TableCell>
+                <TableCell className="text-right font-mono">{formatNumber(totals.week5)}</TableCell>
                 <TableCell className="text-right font-mono bg-blue-100">{formatNumber(totals.cumulative)}</TableCell>
                 <TableCell className="text-right font-mono bg-green-100">{totals.rate}%</TableCell>
               </TableRow>
@@ -1326,6 +1338,7 @@ export default function SalesPage() {
                 <TableHead className={`text-right w-[70px] ${inputCellStyle}`}>2주</TableHead>
                 <TableHead className={`text-right w-[70px] ${inputCellStyle}`}>3주</TableHead>
                 <TableHead className={`text-right w-[70px] ${inputCellStyle}`}>4주</TableHead>
+                <TableHead className={`text-right w-[70px] ${inputCellStyle}`}>5주</TableHead>
                 <TableHead className="text-right w-[80px] bg-blue-50">월누계</TableHead>
                 <TableHead className="text-right w-[70px] bg-green-50">달성률</TableHead>
               </TableRow>
@@ -1389,6 +1402,16 @@ export default function SalesPage() {
                         disabled={!canEditSales}
                       />
                     </TableCell>
+                    <TableCell className={inputCellStyle}>
+                      <Input
+                        type="text"
+                        value={formatNumber(weekData.week5 || 0)}
+                        onChange={(e) => handleContractInput(brand, 'week4', subChannel, 'week5', e.target.value)}
+                        className="h-7 text-right font-mono text-sm bg-transparent border-0 focus:ring-1 focus:ring-pink-400"
+                        placeholder="0"
+                        disabled={!canEditSales}
+                      />
+                    </TableCell>
                     <TableCell className="text-right font-mono bg-blue-50">{formatNumber(cumulative)}</TableCell>
                     <TableCell className="text-right font-mono bg-green-50">{rate}%</TableCell>
                   </TableRow>
@@ -1403,6 +1426,7 @@ export default function SalesPage() {
                 <TableCell className="text-right font-mono">{formatNumber(internalTotals.week2)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(internalTotals.week3)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(internalTotals.week4)}</TableCell>
+                <TableCell className="text-right font-mono">{formatNumber(internalTotals.week5)}</TableCell>
                 <TableCell className="text-right font-mono bg-blue-100">{formatNumber(internalTotals.cumulative)}</TableCell>
                 <TableCell className="text-right font-mono bg-green-100">{internalTotals.rate}%</TableCell>
               </TableRow>
@@ -1465,6 +1489,16 @@ export default function SalesPage() {
                         disabled={!canEditSales}
                       />
                     </TableCell>
+                    <TableCell className={inputCellStyle}>
+                      <Input
+                        type="text"
+                        value={formatNumber(weekData.week5 || 0)}
+                        onChange={(e) => handleContractInput(brand, 'week4', subChannel, 'week5', e.target.value)}
+                        className="h-7 text-right font-mono text-sm bg-transparent border-0 focus:ring-1 focus:ring-pink-400"
+                        placeholder="0"
+                        disabled={!canEditSales}
+                      />
+                    </TableCell>
                     <TableCell className="text-right font-mono bg-blue-50">{formatNumber(cumulative)}</TableCell>
                     <TableCell className="text-right font-mono bg-green-50">{rate}%</TableCell>
                   </TableRow>
@@ -1479,6 +1513,7 @@ export default function SalesPage() {
                 <TableCell className="text-right font-mono">{formatNumber(externalTotals.week2)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(externalTotals.week3)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(externalTotals.week4)}</TableCell>
+                <TableCell className="text-right font-mono">{formatNumber(externalTotals.week5)}</TableCell>
                 <TableCell className="text-right font-mono bg-blue-100">{formatNumber(externalTotals.cumulative)}</TableCell>
                 <TableCell className="text-right font-mono bg-green-100">{externalTotals.rate}%</TableCell>
               </TableRow>
@@ -1492,6 +1527,7 @@ export default function SalesPage() {
                 <TableCell className="text-right font-mono">{formatNumber(totalTotals.week2)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(totalTotals.week3)}</TableCell>
                 <TableCell className="text-right font-mono">{formatNumber(totalTotals.week4)}</TableCell>
+                <TableCell className="text-right font-mono">{formatNumber(totalTotals.week5)}</TableCell>
                 <TableCell className="text-right font-mono bg-blue-100">{formatNumber(totalTotals.cumulative)}</TableCell>
                 <TableCell className="text-right font-mono bg-green-100">{totalTotals.rate}%</TableCell>
               </TableRow>
@@ -1829,6 +1865,7 @@ export default function SalesPage() {
                     { label: '2주차', value: weeklySummary.week2Total },
                     { label: '3주차', value: weeklySummary.week3Total },
                     { label: '4주차', value: weeklySummary.week4Total },
+                    { label: '5주차', value: weeklySummary.week5Total || 0 },
                   ].map((item, idx) => (
                     <div key={idx} className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-indigo-100/60 dark:border-indigo-800/60 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all duration-200 hover:-translate-y-0.5">
                       <div className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1.5">{item.label}</div>
@@ -1860,6 +1897,7 @@ export default function SalesPage() {
                             <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200">2주차</TableHead>
                             <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200">3주차</TableHead>
                             <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200">4주차</TableHead>
+                            <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200">5주차</TableHead>
                             <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200 bg-indigo-100/80 dark:bg-indigo-800/50">월 누계</TableHead>
                             <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200">목표</TableHead>
                             <TableHead className="text-right font-bold text-indigo-800 dark:text-indigo-200">달성률</TableHead>
@@ -1882,6 +1920,7 @@ export default function SalesPage() {
                                 <TableCell className="text-right font-mono">{formatNumber(div.week2)}</TableCell>
                                 <TableCell className="text-right font-mono">{formatNumber(div.week3)}</TableCell>
                                 <TableCell className="text-right font-mono">{formatNumber(div.week4)}</TableCell>
+                                <TableCell className="text-right font-mono">{formatNumber(div.week5 || 0)}</TableCell>
                                 <TableCell className="text-right font-mono font-semibold bg-indigo-50 dark:bg-indigo-900/20">{formatNumber(div.total)}</TableCell>
                                 <TableCell className="text-right font-mono text-muted-foreground">{formatNumber(div.target)}</TableCell>
                                 <TableCell className={`text-right font-mono font-semibold ${rateColor}`}>{div.rate}%</TableCell>
@@ -1895,6 +1934,7 @@ export default function SalesPage() {
                             <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week2Total)}</TableCell>
                             <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week3Total)}</TableCell>
                             <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week4Total)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week5Total || 0)}</TableCell>
                             <TableCell className="text-right font-mono bg-indigo-200 dark:bg-indigo-800">{formatNumber(weeklySummary.monthlyTotal)}</TableCell>
                             <TableCell className="text-right font-mono">{formatNumber(weeklySummary.targetTotal)}</TableCell>
                             <TableCell className={`text-right font-mono ${
@@ -1920,6 +1960,7 @@ export default function SalesPage() {
                           { name: '2주차', 매출: weeklySummary.week2Total },
                           { name: '3주차', 매출: weeklySummary.week3Total },
                           { name: '4주차', 매출: weeklySummary.week4Total },
+                          { name: '5주차', 매출: weeklySummary.week5Total || 0 },
                         ]}
                         barGap={8}
                       >
