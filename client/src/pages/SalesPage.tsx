@@ -918,7 +918,8 @@ export default function SalesPage() {
   // 리코코 제외 합계 (봄봄시공+온라인판매+제조공급만)
   const filteredSummary = useMemo(() => {
     if (!weeklySummary) return null;
-    const filtered = weeklySummary.byDivision.filter(d => d.division !== 'ricoco');
+    const divOrder: Record<string, number> = {'bombom': 0, 'online': 1, 'manufacturing': 2, 'ricoco': 3};
+    const filtered = weeklySummary.byDivision.filter(d => d.division !== 'ricoco').sort((a, b) => (divOrder[a.division] ?? 99) - (divOrder[b.division] ?? 99));
     const w1 = filtered.reduce((s, d) => s + d.week1, 0);
     const w2 = filtered.reduce((s, d) => s + d.week2, 0);
     const w3 = filtered.reduce((s, d) => s + d.week3, 0);
@@ -1919,7 +1920,7 @@ export default function SalesPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredSummary.byDivision.filter((div) => div.division !== 'ricoco').map((div) => {
+                          {filteredSummary.byDivision.map((div) => {
                             const divisionName = div.division === 'bombom' ? '봄봄시공' 
                               : div.division === 'manufacturing' ? '제조공급' 
                               : div.division === 'online' ? '온라인판매' 
