@@ -918,7 +918,7 @@ export default function SalesPage() {
   // 리코코 제외 합계 (봄봄시공+온라인판매+제조공급만)
   const filteredSummary = useMemo(() => {
     if (!weeklySummary) return null;
-    const filtered = filteredSummary.byDivision.filter(d => d.division !== 'ricoco');
+    const filtered = weeklySummary.byDivision.filter(d => d.division !== 'ricoco');
     const w1 = filtered.reduce((s, d) => s + d.week1, 0);
     const w2 = filtered.reduce((s, d) => s + d.week2, 0);
     const w3 = filtered.reduce((s, d) => s + d.week3, 0);
