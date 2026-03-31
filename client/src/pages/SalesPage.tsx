@@ -915,6 +915,21 @@ export default function SalesPage() {
 
   const isLoading = salesLoading || contractLoading;
 
+  // 리코코 제외 합계 (봄봄시공+온라인판매+제조공급만)
+  const filteredSummary = useMemo(() => {
+    if (!weeklySummary) return null;
+    const filtered = filteredSummary.byDivision.filter(d => d.division !== 'ricoco');
+    const w1 = filtered.reduce((s, d) => s + d.week1, 0);
+    const w2 = filtered.reduce((s, d) => s + d.week2, 0);
+    const w3 = filtered.reduce((s, d) => s + d.week3, 0);
+    const w4 = filtered.reduce((s, d) => s + d.week4, 0);
+    const w5 = filtered.reduce((s, d) => s + (d.week5 || 0), 0);
+    const total = w1 + w2 + w3 + w4 + w5;
+    const target = filtered.reduce((s, d) => s + d.target, 0);
+    const rate = target > 0 ? ((total / target) * 100).toFixed(1) : '0';
+    return { week1Total: w1, week2Total: w2, week3Total: w3, week4Total: w4, week5Total: w5, monthlyTotal: total, targetTotal: target, achievementRate: rate, byDivision: filtered };
+  }, [weeklySummary]);
+
   // 전월 대비 차트 데이터 - 사업계획 실적에서 가져오기
   const monthComparisonData = useMemo(() => {
     const sections = Object.entries(dynamicSalesFrames);
@@ -1696,31 +1711,31 @@ export default function SalesPage() {
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-medium text-muted-foreground">월간 목표 달성률</span>
                       <span className={`text-2xl font-bold font-mono ${
-                        parseFloat(weeklySummary.achievementRate) >= 100 ? 'text-green-600 dark:text-green-400' 
-                        : parseFloat(weeklySummary.achievementRate) >= 70 ? 'text-yellow-600 dark:text-yellow-400' 
+                        parseFloat(filteredSummary.achievementRate) >= 100 ? 'text-green-600 dark:text-green-400' 
+                        : parseFloat(filteredSummary.achievementRate) >= 70 ? 'text-yellow-600 dark:text-yellow-400' 
                         : 'text-red-600 dark:text-red-400'
                       }`}>
-                        {weeklySummary.achievementRate}%
+                        {filteredSummary.achievementRate}%
                       </span>
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">
-                        <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{formatNumber(weeklySummary.monthlyTotal)}</span>
+                        <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{formatNumber(filteredSummary.monthlyTotal)}</span>
                         <span className="mx-1">/</span>
-                        <span className="font-mono">{formatNumber(weeklySummary.targetTotal)}</span>
+                        <span className="font-mono">{formatNumber(filteredSummary.targetTotal)}</span>
                       </div>
                     </div>
                   </div>
                   <div className="relative">
                     <Progress 
-                      value={Math.min(parseFloat(weeklySummary.achievementRate), 100)} 
+                      value={Math.min(parseFloat(filteredSummary.achievementRate), 100)} 
                       className={`h-5 rounded-full ${
-                        parseFloat(weeklySummary.achievementRate) >= 100 ? '[&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-emerald-600 [&>div]:shadow-sm [&>div]:shadow-green-300/50' 
-                        : parseFloat(weeklySummary.achievementRate) >= 70 ? '[&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-amber-600 [&>div]:shadow-sm [&>div]:shadow-yellow-300/50' 
+                        parseFloat(filteredSummary.achievementRate) >= 100 ? '[&>div]:bg-gradient-to-r [&>div]:from-green-400 [&>div]:to-emerald-600 [&>div]:shadow-sm [&>div]:shadow-green-300/50' 
+                        : parseFloat(filteredSummary.achievementRate) >= 70 ? '[&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-amber-600 [&>div]:shadow-sm [&>div]:shadow-yellow-300/50' 
                         : '[&>div]:bg-gradient-to-r [&>div]:from-red-400 [&>div]:to-rose-600 [&>div]:shadow-sm [&>div]:shadow-red-300/50'
                       }`}
                     />
-                    {parseFloat(weeklySummary.achievementRate) > 100 && (
+                    {parseFloat(filteredSummary.achievementRate) > 100 && (
                       <div className="absolute top-0 left-0 h-4 w-full flex items-center justify-end pr-2">
                         <span className="text-xs font-bold text-white drop-shadow">🎉 목표 초과!</span>
                       </div>
@@ -1729,7 +1744,7 @@ export default function SalesPage() {
                   
                   {/* 사업부별 프로그레스 바 */}
                   <div className="mt-5 space-y-2">
-                    {weeklySummary.byDivision.map((div) => {
+                    {filteredSummary.byDivision.map((div) => {
                       const divisionName = div.division === 'bombom' ? '봄봄시공' 
                         : div.division === 'ricoco' ? '리코코'
                         : div.division === 'manufacturing' ? '제조공급' 
@@ -1777,26 +1792,26 @@ export default function SalesPage() {
                           data={[
                             { 
                               week: '1주', 
-                              rate: weeklySummary.targetTotal > 0 
-                                ? Math.round((weeklySummary.week1Total / weeklySummary.targetTotal) * 100) 
+                              rate: filteredSummary.targetTotal > 0 
+                                ? Math.round((filteredSummary.week1Total / filteredSummary.targetTotal) * 100) 
                                 : 0 
                             },
                             { 
                               week: '2주', 
-                              rate: weeklySummary.targetTotal > 0 
-                                ? Math.round(((weeklySummary.week1Total + weeklySummary.week2Total) / weeklySummary.targetTotal) * 100) 
+                              rate: filteredSummary.targetTotal > 0 
+                                ? Math.round(((filteredSummary.week1Total + filteredSummary.week2Total) / filteredSummary.targetTotal) * 100) 
                                 : 0 
                             },
                             { 
                               week: '3주', 
-                              rate: weeklySummary.targetTotal > 0 
-                                ? Math.round(((weeklySummary.week1Total + weeklySummary.week2Total + weeklySummary.week3Total) / weeklySummary.targetTotal) * 100) 
+                              rate: filteredSummary.targetTotal > 0 
+                                ? Math.round(((filteredSummary.week1Total + filteredSummary.week2Total + filteredSummary.week3Total) / filteredSummary.targetTotal) * 100) 
                                 : 0 
                             },
                             { 
                               week: '4주', 
-                              rate: weeklySummary.targetTotal > 0 
-                                ? Math.round(((weeklySummary.week1Total + weeklySummary.week2Total + weeklySummary.week3Total + weeklySummary.week4Total) / weeklySummary.targetTotal) * 100) 
+                              rate: filteredSummary.targetTotal > 0 
+                                ? Math.round(((filteredSummary.week1Total + filteredSummary.week2Total + filteredSummary.week3Total + filteredSummary.week4Total) / filteredSummary.targetTotal) * 100) 
                                 : 0 
                             },
                           ]}
@@ -1861,11 +1876,11 @@ export default function SalesPage() {
                 {/* 주차별 전체 매출 카드 */}
                 <div className="relative grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
                   {[
-                    { label: '1주차', value: weeklySummary.week1Total },
-                    { label: '2주차', value: weeklySummary.week2Total },
-                    { label: '3주차', value: weeklySummary.week3Total },
-                    { label: '4주차', value: weeklySummary.week4Total },
-                    { label: '5주차', value: weeklySummary.week5Total || 0 },
+                    { label: '1주차', value: filteredSummary.week1Total },
+                    { label: '2주차', value: filteredSummary.week2Total },
+                    { label: '3주차', value: filteredSummary.week3Total },
+                    { label: '4주차', value: filteredSummary.week4Total },
+                    { label: '5주차', value: filteredSummary.week5Total || 0 },
                   ].map((item, idx) => (
                     <div key={idx} className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-indigo-100/60 dark:border-indigo-800/60 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all duration-200 hover:-translate-y-0.5">
                       <div className="text-xs font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-1.5">{item.label}</div>
@@ -1877,16 +1892,16 @@ export default function SalesPage() {
                   <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 shadow-lg shadow-indigo-200/50 dark:shadow-indigo-900/50 col-span-2 md:col-span-1 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
                     <div className="text-xs font-semibold text-indigo-100 uppercase tracking-wider mb-1.5">월 누계</div>
                     <div className="text-lg font-bold font-mono text-white">
-                      {formatNumber(weeklySummary.monthlyTotal)}
+                      {formatNumber(filteredSummary.monthlyTotal)}
                     </div>
                     <div className="text-xs text-indigo-200 mt-1 font-medium">
-                      목표 대비 {weeklySummary.achievementRate}%
+                      목표 대비 {filteredSummary.achievementRate}%
                     </div>
                   </div>
                 </div>
 
                 {/* 사업부별 주차 매출 테이블 */}
-                {weeklySummary.byDivision.length > 0 && (
+                {filteredSummary.byDivision.length > 0 && (
                   <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl border border-indigo-100/60 dark:border-indigo-800/60 overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                       <Table>
@@ -1904,7 +1919,7 @@ export default function SalesPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {weeklySummary.byDivision.filter((div) => div.division !== 'ricoco').map((div) => {
+                          {filteredSummary.byDivision.filter((div) => div.division !== 'ricoco').map((div) => {
                             const divisionName = div.division === 'bombom' ? '봄봄시공' 
                               : div.division === 'manufacturing' ? '제조공급' 
                               : div.division === 'online' ? '온라인판매' 
@@ -1930,18 +1945,18 @@ export default function SalesPage() {
                           {/* 합계 행 */}
                           <TableRow className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900/50 dark:to-blue-900/40 font-semibold border-t-2 border-indigo-300 dark:border-indigo-600">
                             <TableCell>합계</TableCell>
-                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week1Total)}</TableCell>
-                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week2Total)}</TableCell>
-                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week3Total)}</TableCell>
-                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week4Total)}</TableCell>
-                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.week5Total || 0)}</TableCell>
-                            <TableCell className="text-right font-mono bg-indigo-200 dark:bg-indigo-800">{formatNumber(weeklySummary.monthlyTotal)}</TableCell>
-                            <TableCell className="text-right font-mono">{formatNumber(weeklySummary.targetTotal)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(filteredSummary.week1Total)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(filteredSummary.week2Total)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(filteredSummary.week3Total)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(filteredSummary.week4Total)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(filteredSummary.week5Total || 0)}</TableCell>
+                            <TableCell className="text-right font-mono bg-indigo-200 dark:bg-indigo-800">{formatNumber(filteredSummary.monthlyTotal)}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(filteredSummary.targetTotal)}</TableCell>
                             <TableCell className={`text-right font-mono ${
-                              parseFloat(weeklySummary.achievementRate) >= 100 ? 'text-green-600 dark:text-green-400' 
-                              : parseFloat(weeklySummary.achievementRate) >= 70 ? 'text-yellow-600 dark:text-yellow-400' 
+                              parseFloat(filteredSummary.achievementRate) >= 100 ? 'text-green-600 dark:text-green-400' 
+                              : parseFloat(filteredSummary.achievementRate) >= 70 ? 'text-yellow-600 dark:text-yellow-400' 
                               : 'text-red-600 dark:text-red-400'
-                            }`}>{weeklySummary.achievementRate}%</TableCell>
+                            }`}>{filteredSummary.achievementRate}%</TableCell>
                           </TableRow>
                         </TableBody>
                       </Table>
@@ -1956,11 +1971,11 @@ export default function SalesPage() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart 
                         data={[
-                          { name: '1주차', 매출: weeklySummary.week1Total },
-                          { name: '2주차', 매출: weeklySummary.week2Total },
-                          { name: '3주차', 매출: weeklySummary.week3Total },
-                          { name: '4주차', 매출: weeklySummary.week4Total },
-                          { name: '5주차', 매출: weeklySummary.week5Total || 0 },
+                          { name: '1주차', 매출: filteredSummary.week1Total },
+                          { name: '2주차', 매출: filteredSummary.week2Total },
+                          { name: '3주차', 매출: filteredSummary.week3Total },
+                          { name: '4주차', 매출: filteredSummary.week4Total },
+                          { name: '5주차', 매출: filteredSummary.week5Total || 0 },
                         ]}
                         barGap={8}
                       >
