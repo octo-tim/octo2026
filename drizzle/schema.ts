@@ -77,8 +77,10 @@ export const users = mysqlTable("users", {
    * Use this for relations between tables.
    */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
+  /** Unique user identifier (username). */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
+  /** Hashed password for self-hosted authentication. */
+  passwordHash: varchar("passwordHash", { length: 255 }),
   name: text("name"),
   koreanName: varchar("koreanName", { length: 50 }), // 한글 이름
   email: varchar("email", { length: 320 }),

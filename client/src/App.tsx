@@ -4,6 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthPage } from "./components/AuthPage";
 import TasksPage from "./pages/TasksPage";
 import SalesPage from "./pages/SalesPage";
 import VisionPage from "./pages/VisionPage";
@@ -23,6 +24,7 @@ import ReportPage from './pages/ReportPage';
 function Router() {
   return (
     <Switch>
+      <Route path={"/login"} component={AuthPage} />
       <Route path={"/"}>
         <Redirect to="/dashboard" />
       </Route>
