@@ -2847,6 +2847,7 @@ export async function getWeeklySalesSummary(
   week2Total: number;
   week3Total: number;
   week4Total: number;
+  week5Total: number;
   monthlyTotal: number;
   targetTotal: number;
   achievementRate: string;
@@ -2856,6 +2857,7 @@ export async function getWeeklySalesSummary(
     week2: number;
     week3: number;
     week4: number;
+    week5: number;
     total: number;
     target: number;
     rate: string;
@@ -2874,6 +2876,7 @@ export async function getWeeklySalesSummary(
       week2Total: 0,
       week3Total: 0,
       week4Total: 0,
+      week5Total: 0,
       monthlyTotal: 0,
       targetTotal: 0,
       achievementRate: "0",
@@ -2930,6 +2933,7 @@ export async function getWeeklySalesSummary(
   let week2Total = 0;
   let week3Total = 0;
   let week4Total = 0;
+  let week5Total = 0;
 
   // 사업부별 집계를 위한 맵
   const divisionMap = new Map<string, {
@@ -2937,6 +2941,7 @@ export async function getWeeklySalesSummary(
     week2: number;
     week3: number;
     week4: number;
+    week5: number;
     total: number;
     target: number;
   }>();
@@ -2987,7 +2992,7 @@ export async function getWeeklySalesSummary(
     };
     productGroupMap.set(pgKey, {
       ...existingPg,
-      total: existingPg.total + w1 + w2 + w3 + w4
+      total: existingPg.total + w1 + w2 + w3 + w4 + w5
     });
   });
 
@@ -3017,6 +3022,7 @@ export async function getWeeklySalesSummary(
         week2: 0,
         week3: 0,
         week4: 0,
+        week5: 0,
         total: 0,
         target: target
       });
@@ -3024,7 +3030,7 @@ export async function getWeeklySalesSummary(
     }
   });
 
-  const monthlyTotal = week1Total + week2Total + week3Total + week4Total;
+  const monthlyTotal = week1Total + week2Total + week3Total + week4Total + week5Total;
   const achievementRate = targetTotal > 0 ? ((monthlyTotal / targetTotal) * 100).toFixed(1) : "0";
 
   // 사업부별 데이터 배열로 변환
@@ -3034,6 +3040,7 @@ export async function getWeeklySalesSummary(
     week2: data.week2,
     week3: data.week3,
     week4: data.week4,
+    week5: data.week5,
     total: data.total,
     target: data.target,
     rate: data.target > 0 ? ((data.total / data.target) * 100).toFixed(1) : "0"
@@ -3047,6 +3054,7 @@ export async function getWeeklySalesSummary(
     week2Total,
     week3Total,
     week4Total,
+    week5Total,
     monthlyTotal,
     targetTotal,
     achievementRate,
