@@ -13,7 +13,6 @@ export function registerOAuthRoutes(app: Express) {
         return res.status(400).json({ error: "username과 password는 필수입니다" });
       }
 
-      // Check duplicate
       const existing = await db.getUserByOpenId(username);
       if (existing) {
         return res.status(409).json({ error: "이미 존재하는 사용자입니다" });
@@ -52,8 +51,20 @@ export function registerOAuthRoutes(app: Express) {
         return res.status(400).json({ error: "username과 password는 필수입니다" });
       }
 
-      const user = await db.getUserByOpenId(username);
+      // Use raw SQL to get passwordHash since Drizzle schema may not map it correctly
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        return res.status(500).json({ error: "데이터베이스에 연결할 수 없습니다" });
+      }
+
+      const [rows] = await (dbInstance as any).execute(
+        `SELECT id, openId, name, role, passwordHash FROM users WHERE openId = ? LIMIT 1`,
+        [username]
+      ) as any;
+
+      const user = rows?.[0] ?? rows;
       if (!user || !user.passwordHash) {
+        console.log("[Auth] Login failed: user not found or no passwordHash", { username, hasUser: !!user, hasHash: !!user?.passwordHash });
         return res.status(401).json({ error: "아이디 또는 비밀번호가 올바르지 않습니다" });
       }
 
