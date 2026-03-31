@@ -2958,11 +2958,13 @@ export async function getWeeklySalesSummary(
     const w2 = record.week2Sales ?? 0;
     const w3 = record.week3Sales ?? 0;
     const w4 = record.week4Sales ?? 0;
+    const w5 = record.week5Sales ?? 0;
 
     week1Total += w1;
     week2Total += w2;
     week3Total += w3;
     week4Total += w4;
+    week5Total += w5;
 
     // 사업부별 집계
     const existing = divisionMap.get(record.division) || {
@@ -2970,6 +2972,7 @@ export async function getWeeklySalesSummary(
       week2: 0,
       week3: 0,
       week4: 0,
+      week5: 0,
       total: 0,
       target: 0
     };
@@ -2979,7 +2982,8 @@ export async function getWeeklySalesSummary(
       week2: existing.week2 + w2,
       week3: existing.week3 + w3,
       week4: existing.week4 + w4,
-      total: existing.total + w1 + w2 + w3 + w4,
+      week5: existing.week5 + w5,
+      total: existing.total + w1 + w2 + w3 + w4 + w5,
       target: existing.target // 나중에 사업계획 목표로 대체
     });
 
