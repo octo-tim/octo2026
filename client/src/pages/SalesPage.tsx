@@ -1784,94 +1784,6 @@ export default function SalesPage() {
                     })}
                   </div>
                   
-                  {/* 주간 달성률 추이 미니 차트 */}
-                  <div className="mt-5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-indigo-100/60 dark:border-indigo-800/60">
-                    <div className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 mb-3">주간 달성률 추이</div>
-                    <div className="h-[80px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart 
-                          data={[
-                            { 
-                              week: '1주', 
-                              rate: filteredSummary.targetTotal > 0 
-                                ? Math.round((filteredSummary.week1Total / filteredSummary.targetTotal) * 100) 
-                                : 0 
-                            },
-                            { 
-                              week: '2주', 
-                              rate: filteredSummary.targetTotal > 0 
-                                ? Math.round(((filteredSummary.week1Total + filteredSummary.week2Total) / filteredSummary.targetTotal) * 100) 
-                                : 0 
-                            },
-                            { 
-                              week: '3주', 
-                              rate: filteredSummary.targetTotal > 0 
-                                ? Math.round(((filteredSummary.week1Total + filteredSummary.week2Total + filteredSummary.week3Total) / filteredSummary.targetTotal) * 100) 
-                                : 0 
-                            },
-                            { 
-                              week: '4주', 
-                              rate: filteredSummary.targetTotal > 0 
-                                ? Math.round(((filteredSummary.week1Total + filteredSummary.week2Total + filteredSummary.week3Total + filteredSummary.week4Total) / filteredSummary.targetTotal) * 100) 
-                                : 0 
-                            },
-                          ]}
-                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                        >
-                          <XAxis 
-                            dataKey="week" 
-                            tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} 
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis 
-                            tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} 
-                            axisLine={false}
-                            tickLine={false}
-                            domain={[0, 'auto']}
-                            width={30}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'var(--card)', 
-                              border: '1px solid var(--border)',
-                              borderRadius: '6px',
-                              fontSize: '12px'
-                            }}
-                            formatter={(value: number) => [`${value}%`, '달성률']}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="rate" 
-                            stroke="#6366f1" 
-                            strokeWidth={2}
-                            dot={{ fill: '#6366f1', r: 3 }}
-                            activeDot={{ r: 5 }}
-                          />
-                          {/* 목표 100% 기준선 */}
-                          <Line 
-                            type="monotone" 
-                            dataKey={() => 100} 
-                            stroke="#22c55e" 
-                            strokeWidth={1}
-                            strokeDasharray="3 3"
-                            dot={false}
-                            name="목표"
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-0.5 bg-indigo-500 rounded"></div>
-                        <span>달성률</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-0.5 bg-green-500 rounded" style={{ borderStyle: 'dashed' }}></div>
-                        <span>목표(100%)</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* 주차별 전체 매출 카드 */}
@@ -1995,42 +1907,6 @@ export default function SalesPage() {
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                </div>
-              </section>
-            )}
-
-            {/* 주간 매출 트렌드 차트 */}
-            {Object.values(weeklyInputs).some(w => Object.values(w).some(v => v > 0)) && (
-              <section className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950/40 dark:via-fuchsia-950/30 dark:to-pink-950/20 rounded-2xl border border-purple-200/60 dark:border-purple-800/60 p-6 shadow-sm">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-200/20 to-transparent rounded-bl-full"></div>
-                <h2 className="relative text-lg font-bold mb-5 text-purple-800 dark:text-purple-200">주간 매출 트렌드</h2>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={weeklyTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} />
-                      <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'var(--card)', 
-                          border: '1px solid var(--border)',
-                          borderRadius: '8px'
-                        }}
-                        formatter={(value: number) => [formatNumber(value), '']}
-                      />
-                      <Legend />
-                      {Object.keys(dynamicSalesFrames).map((section, idx) => (
-                        <Line 
-                          key={section}
-                          type="monotone" 
-                          dataKey={section} 
-                          stroke={CHART_COLORS[idx % CHART_COLORS.length]} 
-                          strokeWidth={2}
-                          dot={{ fill: CHART_COLORS[idx % CHART_COLORS.length], r: 4 }}
-                        />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
                 </div>
               </section>
             )}
