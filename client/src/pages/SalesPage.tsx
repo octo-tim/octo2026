@@ -34,6 +34,7 @@ import { Loader2, ChevronLeft, ChevronRight, Save, Plus, Pencil, Trash2, Message
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { SalesCalendar } from '@/components/SalesCalendar';
+import { EcountUpload } from '@/components/EcountUpload';
 import {
   LineChart,
   Line,
@@ -1525,6 +1526,7 @@ export default function SalesPage() {
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
+            {canEditSales && <EcountUpload year={year} month={month} onImportSuccess={() => { refetchSales(); refetchWeeklySummary(); }} />}
             {canEditSales && hasChanges && (
               <Button onClick={handleSave} disabled={upsertSalesMutation.isPending || upsertContractMutation.isPending}>
                 {(upsertSalesMutation.isPending || upsertContractMutation.isPending) ? (
