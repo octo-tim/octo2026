@@ -1,8 +1,31 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
+import mysql from "mysql2/promise";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk, hashPassword, verifyPassword } from "./sdk";
+
+// Direct MySQL connection for login (bypasses Drizzle ORM mapping issues)
+async function getUserWithPassword(username: string) {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) return null;
+  
+  let connection;
+  try {
+    connection = await mysql.createConnection(dbUrl);
+    const [rows] = await connection.execute(
+      'SELECT id, openId, name, role, passwordHash FROM users WHERE openId = ? LIMIT 1',
+      [username]
+    );
+    const result = rows as any[];
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Auth] DB query failed:", error);
+    return null;
+  } finally {
+    if (connection) await connection.end();
+  }
+}
 
 export function registerOAuthRoutes(app: Express) {
   // ── Register ───────────────────────────────────────────────────────
@@ -51,20 +74,8 @@ export function registerOAuthRoutes(app: Express) {
         return res.status(400).json({ error: "username과 password는 필수입니다" });
       }
 
-      // Use raw SQL to get passwordHash since Drizzle schema may not map it correctly
-      const dbInstance = await db.getDb();
-      if (!dbInstance) {
-        return res.status(500).json({ error: "데이터베이스에 연결할 수 없습니다" });
-      }
-
-      const [rows] = await (dbInstance as any).execute(
-        `SELECT id, openId, name, role, passwordHash FROM users WHERE openId = ? LIMIT 1`,
-        [username]
-      ) as any;
-
-      const user = rows?.[0] ?? rows;
+      const user = await getUserWithPassword(username);
       if (!user || !user.passwordHash) {
-        console.log("[Auth] Login failed: user not found or no passwordHash", { username, hasUser: !!user, hasHash: !!user?.passwordHash });
         return res.status(401).json({ error: "아이디 또는 비밀번호가 올바르지 않습니다" });
       }
 
