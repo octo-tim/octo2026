@@ -35,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { SalesCalendar } from '@/components/SalesCalendar';
 import { EcountUpload } from '@/components/EcountUpload';
+import ContractExcelUpload from '@/components/ContractExcelUpload';
 import {
   LineChart,
   Line,
@@ -1324,7 +1325,14 @@ export default function SalesPage() {
         <div className={`flex items-center justify-between p-4 border-b border-border/60 ${DIVISION_COLORS[brand]?.bg || 'bg-teal-50 dark:bg-teal-950/30'}`}>
           <h2 className={`text-lg font-bold ${DIVISION_COLORS[brand]?.text || 'text-teal-700 dark:text-teal-300'}`}>계약현황 - {brandLabel}</h2>
           {canEditSales && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <ContractExcelUpload
+                brand={brand}
+                brandLabel={brandLabel}
+                year={year}
+                month={month}
+                onImportComplete={() => { refetchContracts(); }}
+              />
               <Button size="sm" variant="outline" onClick={() => openContractSetupModal(brand, '내부채널')}>
                 내부채널 목표설정
               </Button>

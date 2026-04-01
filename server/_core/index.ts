@@ -5,6 +5,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerEcountRoutes } from "./ecount";
+import { registerContractUploadRoutes } from "./contractUpload";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -40,6 +41,7 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   registerEcountRoutes(app);
+  registerContractUploadRoutes(app);
 
   // PPT 다운로드 REST API
   app.get('/api/report/:id/ppt', async (req, res) => {
