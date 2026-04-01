@@ -28,21 +28,16 @@ const CHANNEL_MAP: Record<string, { channel: string; subChannel: string }> = {
   '채널톡': { channel: '내부채널', subChannel: '채널톡' },
   '홈피문의': { channel: '내부채널', subChannel: '홈피문의' },
   // 외부채널
-  '공구진행': { channel: '외부채널', subChannel: '공구진행' },
-  '구루구루': { channel: '외부채널', subChannel: '구루구루' },
+  '공구진행': { channel: '외부채널', subChannel: '인플루언서공구' }, // 인플루언서공구로 통합
   '기타': { channel: '외부채널', subChannel: '기타' },
-  '꿈비': { channel: '외부채널', subChannel: '꿈비' },
   '라이브커머스': { channel: '외부채널', subChannel: '라이브커머스' },
-  '링크맘': { channel: '외부채널', subChannel: '링크맘' },
   '베이비페어': { channel: '외부채널', subChannel: '베이비페어' },
-  '베이비페어(꿈비)': { channel: '외부채널', subChannel: '베이비페어(꿈비)' },
   '숨고': { channel: '외부채널', subChannel: '숨고' },
   '시공팀자체영업': { channel: '외부채널', subChannel: '시공팀자체영업' },
   '시공팀': { channel: '외부채널', subChannel: '시공팀자체영업' }, // alias
   '유아매장': { channel: '외부채널', subChannel: '유아매장' },
   '인플루언서공구': { channel: '외부채널', subChannel: '인플루언서공구' },
   '입주박람회': { channel: '외부채널', subChannel: '입주박람회' },
-  '쥬다르': { channel: '외부채널', subChannel: '쥬다르' },
   '지사자체상담': { channel: '외부채널', subChannel: '지사자체상담' },
 };
 
@@ -137,17 +132,34 @@ function parseContractExcel(buffer: Buffer): ParseResult {
     const reservation = Number(row[3]) || 0;
     const conversionRate = Number(row[4]) || 0;
 
+    // 삭제 대상 채널: 데이터 무시 (업로드시 스킵)
+    const IGNORED_CHANNELS = ['구루구루', '꿈비', '링크맘', '베이비페어(꿈비)', '쥬다르'];
+    if (IGNORED_CHANNELS.includes(channelName)) {
+      continue;
+    }
+
     const mapping = CHANNEL_MAP[channelName];
     if (mapping) {
-      channels.push({
-        excelName: channelName,
-        channel: mapping.channel,
-        subChannel: mapping.subChannel,
-        inflow,
-        reservation,
-        conversionRate,
-        mapped: true,
-      });
+      // 통합 채널(공구진행→인플루언서공구)의 경우 기존 값에 합산
+      const existingIdx = channels.findIndex(c => c.channel === mapping.channel && c.subChannel === mapping.subChannel);
+      if (existingIdx >= 0) {
+        channels[existingIdx].inflow += inflow;
+        channels[existingIdx].reservation += reservation;
+        // 전환율 재계산
+        channels[existingIdx].conversionRate = channels[existingIdx].inflow > 0
+          ? Math.round(channels[existingIdx].reservation / channels[existingIdx].inflow * 100)
+          : 0;
+      } else {
+        channels.push({
+          excelName: channelName,
+          channel: mapping.channel,
+          subChannel: mapping.subChannel,
+          inflow,
+          reservation,
+          conversionRate,
+          mapped: true,
+        });
+      }
     } else {
       // 매핑 안 되는 채널은 외부채널로 분류
       channels.push({
