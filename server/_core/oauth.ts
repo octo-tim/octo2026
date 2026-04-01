@@ -44,6 +44,35 @@ export function registerOAuthRoutes(app: Express) {
     }
   });
 
+  // ── Change Password ─────────────────────────────────────────────
+  app.post("/api/auth/change-password", async (req: Request, res: Response) => {
+    try {
+      const { username, newPassword } = req.body ?? {};
+      if (!username || !newPassword) {
+        return res.status(400).json({ error: "username과 newPassword는 필수입니다" });
+      }
+
+      const user = await db.getUserByOpenId(username);
+      if (!user) {
+        return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
+      }
+
+      const hashed = await hashPassword(newPassword);
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) {
+        return res.status(500).json({ error: "데이터베이스에 연결할 수 없습니다" });
+      }
+      await drizzleDb.execute(
+        sql`UPDATE users SET passwordHash = ${hashed}, updatedAt = NOW() WHERE openId = ${username}`
+      );
+
+      res.json({ success: true, message: "비밀번호가 변경되었습니다" });
+    } catch (error) {
+      console.error("[Auth] Change password failed", error);
+      res.status(500).json({ error: "비밀번호 변경에 실패했습니다" });
+    }
+  });
+
   // ── Login ──────────────────────────────────────────────────────────
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
