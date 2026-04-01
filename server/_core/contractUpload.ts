@@ -239,9 +239,11 @@ export function registerContractUploadRoutes(app: Express) {
       try {
         for (const ch of result.channels) {
           // 기존 레코드 조회 (brand + channel + subChannel + year + month)
+          // createdAt ASC로 가장 오래된 원본 레코드를 찾고, LIMIT 1로 정확히 1건만 반환
           const [existing] = await conn.execute(
             `SELECT id FROM contract_records
-             WHERE brand = ? AND channel = ? AND subChannel = ? AND year = ? AND month = ?`,
+             WHERE brand = ? AND channel = ? AND subChannel = ? AND year = ? AND month = ?
+             ORDER BY createdAt ASC LIMIT 1`,
             [brand, ch.channel, ch.subChannel, result.year, result.month]
           ) as any;
 
