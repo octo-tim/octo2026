@@ -165,8 +165,29 @@ export default function ContractExcelUpload({ brand, brandLabel, year, month, on
             </DialogDescription>
           </DialogHeader>
 
-          {/* 파일 선택 영역 */}
+          {/* 주차 선택 + 파일 선택 영역 */}
           <div className="space-y-4">
+            {/* 주차 선택 (파일 선택 전에 먼저 표시) */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium whitespace-nowrap">입력할 주차:</span>
+              <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="주차 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1주차</SelectItem>
+                  <SelectItem value="2">2주차</SelectItem>
+                  <SelectItem value="3">3주차</SelectItem>
+                  <SelectItem value="4">4주차</SelectItem>
+                  <SelectItem value="5">5주차</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">
+                ※ 해당 주차의 예약 건수가 덮어씌워집니다
+              </span>
+            </div>
+
+            {/* 파일 선택 */}
             <div className="flex items-center gap-3">
               <input
                 ref={fileInputRef}
@@ -210,26 +231,6 @@ export default function ContractExcelUpload({ brand, brandLabel, year, month, on
                     <span className="text-xs text-muted-foreground">합계</span>
                     <p className="text-sm font-medium">유입 {formatNumber(preview.totalInflow)} / 예약 {formatNumber(preview.totalReservation)}</p>
                   </div>
-                </div>
-
-                {/* 주차 선택 */}
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium whitespace-nowrap">입력할 주차:</span>
-                  <Select value={selectedWeek} onValueChange={setSelectedWeek}>
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="주차 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1주차</SelectItem>
-                      <SelectItem value="2">2주차</SelectItem>
-                      <SelectItem value="3">3주차</SelectItem>
-                      <SelectItem value="4">4주차</SelectItem>
-                      <SelectItem value="5">5주차</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="text-xs text-muted-foreground">
-                    ※ 해당 주차의 예약 건수가 덮어씌워집니다
-                  </span>
                 </div>
 
                 {/* 매핑 안 된 채널 경고 */}
