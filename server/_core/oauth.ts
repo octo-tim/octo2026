@@ -73,6 +73,39 @@ export function registerOAuthRoutes(app: Express) {
     }
   });
 
+  // ── Change Username (openId) ────────────────────────────────────
+  app.post("/api/auth/change-username", async (req: Request, res: Response) => {
+    try {
+      const { currentOpenId, newOpenId } = req.body ?? {};
+      if (!currentOpenId || !newOpenId) {
+        return res.status(400).json({ error: "currentOpenId와 newOpenId는 필수입니다" });
+      }
+
+      const user = await db.getUserByOpenId(currentOpenId);
+      if (!user) {
+        return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
+      }
+
+      const existing = await db.getUserByOpenId(newOpenId);
+      if (existing) {
+        return res.status(409).json({ error: "이미 사용 중인 아이디입니다" });
+      }
+
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) {
+        return res.status(500).json({ error: "데이터베이스에 연결할 수 없습니다" });
+      }
+      await drizzleDb.execute(
+        sql`UPDATE users SET openId = ${newOpenId}, updatedAt = NOW() WHERE openId = ${currentOpenId}`
+      );
+
+      res.json({ success: true, message: `아이디가 ${newOpenId}로 변경되었습니다` });
+    } catch (error) {
+      console.error("[Auth] Change username failed", error);
+      res.status(500).json({ error: "아이디 변경에 실패했습니다" });
+    }
+  });
+
   // ── Login ──────────────────────────────────────────────────────────
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
