@@ -238,18 +238,31 @@ export function registerContractUploadRoutes(app: Express) {
 
       try {
         for (const ch of result.channels) {
-          // 예약 값이 0이어도 저장 (모든 채널 기록 유지)
-          const id = uuidv4();
-          
-          await conn.execute(
-            `INSERT INTO contract_records (id, userId, brand, channel, subChannel, ${weekField}, totalCount, year, month, createdAt, updatedAt)
-             VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-             ON DUPLICATE KEY UPDATE
-               ${weekField} = VALUES(${weekField}),
-               totalCount = COALESCE(week1Count, 0) + COALESCE(week2Count, 0) + COALESCE(week3Count, 0) + COALESCE(week4Count, 0) + COALESCE(week5Count, 0),
-               updatedAt = NOW()`,
-            [id, brand, ch.channel, ch.subChannel, ch.reservation, ch.reservation, result.year, result.month]
-          );
+          // 기존 레코드 조회 (brand + channel + subChannel + year + month)
+          const [existing] = await conn.execute(
+            `SELECT id FROM contract_records
+             WHERE brand = ? AND channel = ? AND subChannel = ? AND year = ? AND month = ?`,
+            [brand, ch.channel, ch.subChannel, result.year, result.month]
+          ) as any;
+
+          if (existing && existing.length > 0) {
+            // UPDATE: 해당 주차 필드만 갱신
+            await conn.execute(
+              `UPDATE contract_records
+               SET ${weekField} = ?,
+                   updatedAt = NOW()
+               WHERE id = ?`,
+              [ch.reservation, existing[0].id]
+            );
+          } else {
+            // INSERT: 새 레코드 생성
+            const id = uuidv4();
+            await conn.execute(
+              `INSERT INTO contract_records (id, userId, brand, channel, subChannel, ${weekField}, totalCount, year, month, createdAt, updatedAt)
+               VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              [id, brand, ch.channel, ch.subChannel, ch.reservation, ch.reservation, result.year, result.month]
+            );
+          }
           upserted++;
           importedChannels.push({
             channel: ch.channel,
