@@ -506,17 +506,16 @@ export const appRouter = router({
         fileSize: z.number().default(0),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { storagePut } = await import('./storage');
-        const buffer = Buffer.from(input.fileBase64, 'base64');
         const randomSuffix = Math.random().toString(36).substring(2, 10);
         const fileKey = `task-attachments/${input.taskId}/${randomSuffix}-${input.fileName}`;
-        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        // DB에 data URL로 직접 저장 (외부 스토리지 불필요)
+        const dataUrl = `data:${input.mimeType};base64,${input.fileBase64}`;
         const attachment = await createTaskAttachment({
           taskId: input.taskId,
           userId: ctx.user.id,
           fileName: input.fileName,
           fileKey,
-          url,
+          url: dataUrl,
           mimeType: input.mimeType,
           fileSize: input.fileSize,
         });

@@ -38,6 +38,23 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Auto-migration: task_attachments.url → LONGTEXT (for base64 file storage)
+  try {
+    const dbUrl = process.env.DATABASE_URL;
+    if (dbUrl) {
+      const mysql = await import("mysql2/promise");
+      const conn = await mysql.createConnection(dbUrl);
+      await conn.execute("ALTER TABLE task_attachments MODIFY COLUMN url LONGTEXT NOT NULL");
+      await conn.end();
+      console.log("[Migration] task_attachments.url → LONGTEXT done");
+    }
+  } catch (e: any) {
+    if (!e.message?.includes('already')) {
+      console.log("[Migration] url column check:", e.message?.substring(0, 80));
+    }
+  }
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   registerEcountRoutes(app);

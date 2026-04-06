@@ -666,9 +666,20 @@ export function TaskModal({ open, onOpenChange, task, onSubmit }: TaskModalProps
                         <div className="flex items-center gap-1 shrink-0">
                           <a
                             href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
+                            download={file.fileName}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // data URL인 경우 프로그래밍 방식으로 다운로드
+                              if (file.url.startsWith('data:')) {
+                                e.preventDefault();
+                                const a = document.createElement('a');
+                                a.href = file.url;
+                                a.download = file.fileName;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                              }
+                            }}
                             className="p-1.5 rounded-md hover:bg-background transition-colors text-muted-foreground hover:text-primary"
                             title="다운로드"
                           >
