@@ -647,7 +647,7 @@ export default function FinancialPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {yearlySummary.map((m: any) => {
+                  {yearlySummary.filter((m: any) => m.month <= month).map((m: any) => {
                     const isCurrent = m.month === month;
                     const hasData = m.hasData;
                     return (
