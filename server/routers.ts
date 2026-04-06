@@ -2186,6 +2186,20 @@ export const appRouter = router({
         const months = [];
         let cumulativeIncome = 0;
         let cumulativeExpense = 0;
+        let prevClosingBalance = 0;
+
+        // 전년 12월 기말잔액 계산 (1월 기초잔액 이월용)
+        const prevYearBalance = await getFinancialBalance(input.year - 1, 12);
+        const prevYearRecords = await getFinancialRecords(input.year - 1, 12);
+        if (prevYearBalance || prevYearRecords.length > 0) {
+          const prevOB = prevYearBalance?.openingBalance || 0;
+          let prevInc = 0, prevExp = 0;
+          prevYearRecords.forEach((r: any) => {
+            if (r.type === 'income') prevInc += r.amount || 0;
+            else if (r.type === 'expense') prevExp += r.amount || 0;
+          });
+          prevClosingBalance = prevOB + prevInc - prevExp;
+        }
 
         for (let m = 1; m <= 12; m++) {
           const records = await getFinancialRecords(input.year, m);
@@ -2201,7 +2215,9 @@ export const appRouter = router({
           cumulativeIncome += monthIncome;
           cumulativeExpense += monthExpense;
 
-          const openingBal = balance?.openingBalance || 0;
+          // 기초잔액: DB에 수동 설정값이 있으면 사용, 없으면 전월 기말잔액 이월
+          const dbOpeningBal = balance?.openingBalance || 0;
+          const openingBal = dbOpeningBal !== 0 ? dbOpeningBal : prevClosingBalance;
           const closingBal = openingBal + monthIncome - monthExpense;
 
           months.push({
@@ -2216,6 +2232,9 @@ export const appRouter = router({
             cumulativeNet: cumulativeIncome - cumulativeExpense,
             hasData: records.length > 0,
           });
+
+          // 다음 달의 기초잔액을 위해 이번 달 기말잔액 저장
+          prevClosingBalance = closingBal;
         }
 
         return months;
