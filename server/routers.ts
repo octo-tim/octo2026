@@ -2099,14 +2099,40 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    // 재무 잔액 조회 (월별 기초잔액)
+    // 재무 잔액 조회 (월별 기초잔액 + 전월 기말잔액 자동 반영)
     getBalance: financialEditorProcedure
       .input(z.object({
         year: z.number(),
         month: z.number().min(1).max(12),
       }))
       .query(async ({ input }) => {
-        return await getFinancialBalance(input.year, input.month);
+        const balance = await getFinancialBalance(input.year, input.month);
+        
+        // 전월 기말잔액 계산
+        const prevMonth = input.month === 1 ? 12 : input.month - 1;
+        const prevYear = input.month === 1 ? input.year - 1 : input.year;
+        
+        const prevBalance = await getFinancialBalance(prevYear, prevMonth);
+        const prevRecords = await getFinancialRecords(prevYear, prevMonth);
+        
+        const prevOpeningBal = prevBalance?.openingBalance || 0;
+        let prevTotalIncome = 0;
+        let prevTotalExpense = 0;
+        prevRecords.forEach((r: any) => {
+          if (r.type === 'income') prevTotalIncome += r.amount || 0;
+          else if (r.type === 'expense') prevTotalExpense += r.amount || 0;
+        });
+        const prevClosingBalance = prevOpeningBal + prevTotalIncome - prevTotalExpense;
+        
+        // 기초잔액이 설정되지 않았으면 전월 기말잔액을 자동 사용
+        const effectiveOpeningBalance = (balance && balance.openingBalance !== 0) ? balance.openingBalance : prevClosingBalance;
+        
+        return {
+          ...(balance || { id: null, year: input.year, month: input.month, openingBalance: 0 }),
+          openingBalance: effectiveOpeningBalance,
+          previousMonthClosingBalance: prevClosingBalance,
+          isAutoCarryOver: !balance || balance.openingBalance === 0,
+        };
       }),
 
     // 재무 잔액 설정 (월별 기초잔액)
