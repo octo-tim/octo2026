@@ -2177,6 +2177,50 @@ export const appRouter = router({
         
         return { success: true, count: records.length };
       }),
+
+    // 연간 월별 입출금 요약 (1월~12월, 누적 포함)
+    getYearlySummary: financialEditorProcedure
+      .input(z.object({
+        year: z.number(),
+      }))
+      .query(async ({ input }) => {
+        const months = [];
+        let cumulativeIncome = 0;
+        let cumulativeExpense = 0;
+
+        for (let m = 1; m <= 12; m++) {
+          const records = await getFinancialRecords(input.year, m);
+          const balance = await getFinancialBalance(input.year, m);
+
+          let monthIncome = 0;
+          let monthExpense = 0;
+          records.forEach((r: any) => {
+            if (r.type === 'income') monthIncome += r.amount || 0;
+            else if (r.type === 'expense') monthExpense += r.amount || 0;
+          });
+
+          cumulativeIncome += monthIncome;
+          cumulativeExpense += monthExpense;
+
+          const openingBal = balance?.openingBalance || 0;
+          const closingBal = openingBal + monthIncome - monthExpense;
+
+          months.push({
+            month: m,
+            openingBalance: openingBal,
+            income: monthIncome,
+            expense: monthExpense,
+            net: monthIncome - monthExpense,
+            closingBalance: closingBal,
+            cumulativeIncome,
+            cumulativeExpense,
+            cumulativeNet: cumulativeIncome - cumulativeExpense,
+            hasData: records.length > 0,
+          });
+        }
+
+        return months;
+      }),
   }),
 
   // ==================== KPI 실적관리 Router ====================

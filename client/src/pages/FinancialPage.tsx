@@ -137,6 +137,10 @@ export default function FinancialPage() {
     { year, month },
     { retry: 1 }
   );
+  const { data: yearlySummary } = trpc.financial.getYearlySummary.useQuery(
+    { year },
+    { retry: 1 }
+  );
 
   // Mutations
   const createMutation = trpc.financial.createRecord.useMutation({
@@ -620,6 +624,71 @@ export default function FinancialPage() {
             </Button>
           </div>
         </div>
+
+        {/* 월별 입출금 요약 (당해년도 1~12월) */}
+        {yearlySummary && (
+          <section className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border/60 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30">
+              <h2 className="text-lg font-bold text-indigo-800 dark:text-indigo-200">{year}년 월별 입출금 현황</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30">
+                    <TableHead className="w-[70px] text-center font-bold">월</TableHead>
+                    <TableHead className="text-right font-bold">기초잔액</TableHead>
+                    <TableHead className="text-right font-bold text-emerald-700 dark:text-emerald-400">입금</TableHead>
+                    <TableHead className="text-right font-bold text-red-700 dark:text-red-400">출금</TableHead>
+                    <TableHead className="text-right font-bold">순증감</TableHead>
+                    <TableHead className="text-right font-bold text-indigo-700 dark:text-indigo-400">기말잔액</TableHead>
+                    <TableHead className="text-right font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20">누적입금</TableHead>
+                    <TableHead className="text-right font-bold text-red-700 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20">누적출금</TableHead>
+                    <TableHead className="text-right font-bold bg-indigo-50/50 dark:bg-indigo-950/20">누적순증감</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {yearlySummary.map((m: any) => {
+                    const isCurrent = m.month === month;
+                    const hasData = m.hasData;
+                    return (
+                      <TableRow
+                        key={m.month}
+                        className={`${isCurrent ? 'bg-indigo-50/70 dark:bg-indigo-950/30 font-semibold' : ''} ${!hasData && m.openingBalance === 0 ? 'opacity-40' : ''} cursor-pointer hover:bg-muted/50`}
+                        onClick={() => setMonth(m.month)}
+                      >
+                        <TableCell className={`text-center font-medium ${isCurrent ? 'text-indigo-700 dark:text-indigo-300' : ''}`}>
+                          {m.month}월
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm">{formatNumber(m.openingBalance)}</TableCell>
+                        <TableCell className="text-right font-mono text-sm text-emerald-700 dark:text-emerald-400">
+                          {m.income > 0 ? '+' + formatNumber(m.income) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm text-red-700 dark:text-red-400">
+                          {m.expense > 0 ? '-' + formatNumber(m.expense) : '-'}
+                        </TableCell>
+                        <TableCell className={`text-right font-mono text-sm ${m.net >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                          {m.net !== 0 ? formatNumber(m.net) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm font-medium text-indigo-700 dark:text-indigo-400">
+                          {hasData || m.openingBalance !== 0 ? formatNumber(m.closingBalance) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-950/10">
+                          {m.cumulativeIncome > 0 ? '+' + formatNumber(m.cumulativeIncome) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm text-red-700 dark:text-red-400 bg-red-50/30 dark:bg-red-950/10">
+                          {m.cumulativeExpense > 0 ? '-' + formatNumber(m.cumulativeExpense) : '-'}
+                        </TableCell>
+                        <TableCell className={`text-right font-mono text-sm font-medium bg-indigo-50/30 dark:bg-indigo-950/10 ${m.cumulativeNet >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                          {m.cumulativeIncome > 0 || m.cumulativeExpense > 0 ? formatNumber(m.cumulativeNet) : '-'}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </section>
+        )}
 
         {/* 요약 카드 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
