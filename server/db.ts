@@ -2274,6 +2274,7 @@ export async function getAllUsers(): Promise<Array<{
   isProfileComplete: boolean;
   canEditSales: boolean;
   canEditFinancial: boolean;
+  canEditKpi: boolean;
   createdAt: Date;
   lastSignedIn: Date;
   divisionName: string | null;
@@ -2302,6 +2303,7 @@ export async function getAllUsers(): Promise<Array<{
       isProfileComplete: users.isProfileComplete,
       canEditSales: users.canEditSales,
       canEditFinancial: users.canEditFinancial,
+      canEditKpi: users.canEditKpi,
       createdAt: users.createdAt,
       lastSignedIn: users.lastSignedIn,
       divisionName: divisions.name,
