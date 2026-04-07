@@ -12,6 +12,7 @@ import { MainLayout } from '@/components/MainLayout';
 import { Button } from '@/components/ui/button';
 import { KpiTaskDetailDialog } from '@/components/KpiTaskDetailDialog';
 import { KpiAssigneeDialog } from '@/components/KpiAssigneeDialog';
+import { KpiItemManageDialog } from '@/components/KpiItemManageDialog';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -237,6 +238,7 @@ export default function KpiPage() {
   const [selectedItem, setSelectedItem] = useState<KpiItem | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
+  const [isItemManageOpen, setIsItemManageOpen] = useState(false);
 
   // Data queries
   const { data: kpiItems, isLoading: itemsLoading } = trpc.kpi.getItems.useQuery();
@@ -603,10 +605,16 @@ export default function KpiPage() {
           <div className="flex-1" />
 
           {canEdit && (
-            <Button variant="outline" size="sm" onClick={() => setIsAssigneeOpen(true)} className="gap-1.5">
-              <Users className="w-3.5 h-3.5" />
-              담당자 관리
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => setIsItemManageOpen(true)} className="gap-1.5">
+                <ClipboardEdit className="w-3.5 h-3.5" />
+                항목 관리
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setIsAssigneeOpen(true)} className="gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                담당자 관리
+              </Button>
+            </>
           )}
 
           <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5">
@@ -1223,6 +1231,13 @@ export default function KpiPage() {
         open={isAssigneeOpen}
         onOpenChange={setIsAssigneeOpen}
         departments={departments as string[]}
+      />
+
+      {/* KPI Item Management Dialog */}
+      <KpiItemManageDialog
+        open={isItemManageOpen}
+        onOpenChange={setIsItemManageOpen}
+        onSaved={() => { utils.kpi.getItems.invalidate(); }}
       />
     </MainLayout>
   );
