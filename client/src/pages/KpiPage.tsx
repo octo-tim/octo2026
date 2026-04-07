@@ -524,7 +524,7 @@ export default function KpiPage() {
   }, []);
 
   // Can edit
-  const canEdit = user?.role === 'admin' || user?.canEditSales;
+  const canEdit = user?.role === 'admin' || user?.canEditKpi;
 
   // Loading
   if (authLoading || itemsLoading) {

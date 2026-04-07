@@ -94,6 +94,7 @@ export const users = mysqlTable("users", {
   isProfileComplete: boolean("isProfileComplete").default(false).notNull(), // 프로필 완성 여부
   canEditSales: boolean("canEditSales").default(false).notNull(), // 매출관리 편집 권한
   canEditFinancial: boolean("canEditFinancial").default(false).notNull(), // 재무현황 편집 권한
+  canEditKpi: boolean("canEditKpi").default(false).notNull(), // 실적관리(KPI) 편집 권한
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

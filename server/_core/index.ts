@@ -46,6 +46,13 @@ async function startServer() {
       const mysql = await import("mysql2/promise");
       const conn = await mysql.createConnection(dbUrl);
       await conn.execute("ALTER TABLE task_attachments MODIFY COLUMN url LONGTEXT NOT NULL");
+      // canEditKpi 컴럼 추가
+      try {
+        await conn.execute("ALTER TABLE users ADD COLUMN canEditKpi BOOLEAN NOT NULL DEFAULT FALSE");
+        console.log("[Migration] users.canEditKpi column added");
+      } catch (e2: any) {
+        // 이미 존재하는 경우 무시
+      }
       await conn.end();
       console.log("[Migration] task_attachments.url → LONGTEXT done");
     }

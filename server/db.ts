@@ -2388,6 +2388,21 @@ export async function updateUserFinancialPermission(userId: number, canEditFinan
 }
 
 /**
+ * 사용자 실적관리(KPI) 편집 권한 변경 (관리자용)
+ */
+export async function updateUserKpiPermission(userId: number, canEditKpi: boolean): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  await db
+    .update(users)
+    .set({ canEditKpi })
+    .where(eq(users.id, userId));
+}
+
+/**
  * 재무 레코드 일괄 생성 (bulk insert)
  */
 export async function bulkCreateFinancialRecords(records: Array<{

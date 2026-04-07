@@ -32,7 +32,7 @@ import {
   getAllContractSubChannels, getContractSubChannelsByChannel, getActiveContractSubChannelsByChannel, createContractSubChannel, updateContractSubChannel, deleteContractSubChannel,
   getContractChannelsWithSubChannels,
   // Member Management functions
-  getAllUsers, deleteUser, updateUserRole, updateUserSalesPermission, updateUserFinancialPermission,
+  getAllUsers, deleteUser, updateUserRole, updateUserSalesPermission, updateUserFinancialPermission, updateUserKpiPermission,
   // Task Progress Log functions
   getTaskProgressLogs, createTaskProgressLog, updateTaskProgressLog, deleteTaskProgressLog, saveTaskProgressLogs,
   // Archive functions
@@ -116,6 +116,14 @@ const financialEditorProcedure = protectedProcedure.use(({ ctx, next }) => {
   const hasPermission = ctx.user.canEditFinancial;
   if (!isOwner && !isAdmin && !hasPermission) {
     throw new TRPCError({ code: 'FORBIDDEN', message: '재무 편집 권한이 필요합니다' });
+  }
+  return next({ ctx });
+});
+
+// KPI editor procedure - allows admin users or users with canEditKpi permission
+const kpiEditorProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== 'admin' && !ctx.user.canEditKpi) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: '실적관리 편집 권한이 필요합니다' });
   }
   return next({ ctx });
 });
@@ -1280,6 +1288,17 @@ export const appRouter = router({
         await updateUserFinancialPermission(input.userId, input.canEditFinancial);
         return { success: true };
       }),
+
+    // Update user KPI permission
+    updateKpiPermission: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        canEditKpi: z.boolean(),
+      }))
+      .mutation(async ({ input }) => {
+        await updateUserKpiPermission(input.userId, input.canEditKpi);
+        return { success: true };
+      }),
   }),
 
   // ==================== Sales Event Router ====================
@@ -2279,7 +2298,7 @@ export const appRouter = router({
       }),
 
     // KPI 실적 데이터 저장 (단건 upsert)
-    saveRecord: salesEditorProcedure
+    saveRecord: kpiEditorProcedure
       .input(z.object({
         kpiIndicatorId: z.number(),
         year: z.number(),
@@ -2293,7 +2312,7 @@ export const appRouter = router({
       }),
 
     // KPI 실적 데이터 일괄 저장
-    bulkSaveRecords: salesEditorProcedure
+    bulkSaveRecords: kpiEditorProcedure
       .input(z.object({
         records: z.array(z.object({
           kpiIndicatorId: z.number(),
@@ -2309,7 +2328,7 @@ export const appRouter = router({
       }),
 
     // KPI 실적 데이터 삭제
-    deleteRecord: salesEditorProcedure
+    deleteRecord: kpiEditorProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await deleteKpiRecord(input.id);
@@ -2409,7 +2428,7 @@ export const appRouter = router({
       }),
 
     // KPI 목표/전월실적 저장 (단건)
-    saveTarget: salesEditorProcedure
+    saveTarget: kpiEditorProcedure
       .input(z.object({
         kpiIndicatorId: z.number(),
         year: z.number(),
@@ -2423,7 +2442,7 @@ export const appRouter = router({
       }),
 
     // KPI 목표/전월실적 일괄 저장
-    bulkSaveTargets: salesEditorProcedure
+    bulkSaveTargets: kpiEditorProcedure
       .input(z.object({
         records: z.array(z.object({
           kpiIndicatorId: z.number(),
@@ -2458,7 +2477,7 @@ export const appRouter = router({
         return await getKpiItemDetailsByMonth(input.year, input.month);
       }),
 
-    saveItemDetail: salesEditorProcedure
+    saveItemDetail: kpiEditorProcedure
       .input(z.object({
         kpiItemId: z.number(),
         year: z.number(),
@@ -2522,7 +2541,7 @@ export const appRouter = router({
       }),
 
       // 업무에 담당자 배정
-    assignPerson: salesEditorProcedure
+    assignPerson: kpiEditorProcedure
       .input(z.object({
         kpiItemId: z.number(),
         person: z.string().min(1),

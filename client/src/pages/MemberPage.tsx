@@ -75,6 +75,14 @@ export default function MemberPage() {
     onError: (error) => toast.error(error.message),
   });
 
+  const updateKpiPermission = trpc.member.updateKpiPermission.useMutation({
+    onSuccess: () => {
+      toast.success('실적관리 권한이 변경되었습니다');
+      utils.member.list.invalidate();
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
   // Loading state
   if (authLoading) {
     return (
@@ -207,6 +215,7 @@ export default function MemberPage() {
                       <th className="text-left py-3 px-4 font-medium text-muted-foreground">역할</th>
                       <th className="text-center py-3 px-4 font-medium text-muted-foreground">매출권한</th>
                       <th className="text-center py-3 px-4 font-medium text-muted-foreground">재무권한</th>
+                      <th className="text-center py-3 px-4 font-medium text-muted-foreground">실적권한</th>
                       <th className="text-left py-3 px-4 font-medium text-muted-foreground">가입일</th>
                       <th className="text-left py-3 px-4 font-medium text-muted-foreground">최근 접속</th>
                       <th className="text-right py-3 px-4 font-medium text-muted-foreground">관리</th>
@@ -266,6 +275,18 @@ export default function MemberPage() {
                                 updateFinancialPermission.mutate({ userId: member.id, canEditFinancial: checked });
                               }}
                               title={member.role === 'admin' ? '관리자는 자동으로 권한이 부여됩니다' : '재무현황 편집 권한'}
+                            />
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center">
+                            <Switch
+                              checked={member.role === 'admin' || member.canEditKpi}
+                              disabled={member.role === 'admin' || updateKpiPermission.isPending}
+                              onCheckedChange={(checked) => {
+                                updateKpiPermission.mutate({ userId: member.id, canEditKpi: checked });
+                              }}
+                              title={member.role === 'admin' ? '관리자는 자동으로 권한이 부여됩니다' : '실적관리 편집 권한'}
                             />
                           </div>
                         </td>
