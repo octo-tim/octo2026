@@ -632,7 +632,7 @@ export default function FinancialPage() {
               <h2 className="text-lg font-bold text-indigo-800 dark:text-indigo-200">{year}년 월별 입출금 현황</h2>
             </div>
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow className="bg-muted/30">
                     <TableHead className="w-[70px] text-center font-bold">월</TableHead>
@@ -828,7 +828,7 @@ export default function FinancialPage() {
           ) : (
             <div className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow className="bg-muted/50">
                       <TableHead className="w-[80px] text-center">주차</TableHead>

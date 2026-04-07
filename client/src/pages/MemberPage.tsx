@@ -223,7 +223,7 @@ export default function MemberPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[1100px]">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-medium text-muted-foreground">이름</th>

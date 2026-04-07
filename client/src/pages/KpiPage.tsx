@@ -912,7 +912,7 @@ export default function KpiPage() {
               {isOpen && (
                 <div className="rounded-xl border border-border overflow-hidden bg-card animate-in fade-in-0 slide-in-from-top-1 duration-200">
                   <div className="overflow-x-auto">
-                    <Table>
+                    <Table className="min-w-[1000px]">
                       <TableHeader>
                         <TableRow className="bg-muted/30">
                           <TableHead className="w-[100px] whitespace-nowrap">담당자</TableHead>
@@ -1041,7 +1041,7 @@ export default function KpiPage() {
             {/* Summary Table */}
             <div className="rounded-xl border border-border overflow-hidden bg-card">
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-[1000px]">
                   <TableHeader>
                     <TableRow className="bg-muted/30">
                       <TableHead className="w-[40px]">#</TableHead>

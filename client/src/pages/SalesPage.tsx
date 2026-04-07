@@ -1211,7 +1211,7 @@ export default function SalesPage() {
           )}
         </div>
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[120px]">{config.label}</TableHead>
@@ -1351,7 +1351,7 @@ export default function SalesPage() {
           )}
         </div>
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">유입경로</TableHead>
