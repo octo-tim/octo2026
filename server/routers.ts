@@ -1299,6 +1299,20 @@ export const appRouter = router({
         await updateUserKpiPermission(input.userId, input.canEditKpi);
         return { success: true };
       }),
+
+    // Update user organization info (admin only)
+    updateOrganization: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        divisionId: z.number().nullable(),
+        teamId: z.number().nullable(),
+        positionId: z.number().nullable(),
+      }))
+      .mutation(async ({ input }) => {
+        const { userId, ...updates } = input;
+        await updateUserProfile(userId, updates);
+        return { success: true };
+      }),
   }),
 
   // ==================== Sales Event Router ====================

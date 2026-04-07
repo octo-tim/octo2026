@@ -29,6 +29,8 @@ export default function MemberPage() {
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<'user' | 'admin'>('user');
+  const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
+  const [editOrg, setEditOrg] = useState<{ divisionId: number | null; teamId: number | null; positionId: number | null }>({ divisionId: null, teamId: null, positionId: null });
 
   const utils = trpc.useUtils();
 
@@ -37,6 +39,11 @@ export default function MemberPage() {
     undefined,
     { enabled: user?.role === 'admin' }
   );
+
+  // Organization data for dropdowns
+  const { data: divisions } = trpc.organization.division.listActive.useQuery(undefined, { enabled: user?.role === 'admin' });
+  const { data: allTeams } = trpc.organization.team.listAll.useQuery(undefined, { enabled: user?.role === 'admin' });
+  const { data: positions } = trpc.organization.position.listActive.useQuery(undefined, { enabled: user?.role === 'admin' });
 
   // Mutations
   const deleteMember = trpc.member.delete.useMutation({
@@ -82,6 +89,18 @@ export default function MemberPage() {
     },
     onError: (error) => toast.error(error.message),
   });
+
+  const updateOrganization = trpc.member.updateOrganization.useMutation({
+    onSuccess: () => {
+      toast.success('조직 정보가 변경되었습니다');
+      utils.member.list.invalidate();
+      setEditingMemberId(null);
+    },
+    onError: (error) => toast.error(error.message),
+  });
+
+  // Filtered teams based on selected division
+  const filteredTeams = allTeams?.filter((t: any) => t.divisionId === editOrg.divisionId) || [];
 
   // Loading state
   if (authLoading) {
@@ -236,13 +255,57 @@ export default function MemberPage() {
                           {member.email || '-'}
                         </td>
                         <td className="py-3 px-4">
-                          {member.divisionName || '-'}
+                          {editingMemberId === member.id ? (
+                            <Select value={editOrg.divisionId ? String(editOrg.divisionId) : 'none'} onValueChange={(v) => setEditOrg(prev => ({ ...prev, divisionId: v === 'none' ? null : Number(v), teamId: null }))}>
+                              <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue placeholder="선택" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">-</SelectItem>
+                                {divisions?.map((d: any) => <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <span className="cursor-pointer hover:text-primary hover:underline" onClick={() => { setEditingMemberId(member.id); setEditOrg({ divisionId: member.divisionId, teamId: member.teamId, positionId: member.positionId }); }}>
+                              {member.divisionName || '-'}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 px-4">
-                          {member.teamName || '-'}
+                          {editingMemberId === member.id ? (
+                            <Select value={editOrg.teamId ? String(editOrg.teamId) : 'none'} onValueChange={(v) => setEditOrg(prev => ({ ...prev, teamId: v === 'none' ? null : Number(v) }))}>
+                              <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue placeholder="선택" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">-</SelectItem>
+                                {filteredTeams.map((t: any) => <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <span className="cursor-pointer hover:text-primary hover:underline" onClick={() => { setEditingMemberId(member.id); setEditOrg({ divisionId: member.divisionId, teamId: member.teamId, positionId: member.positionId }); }}>
+                              {member.teamName || '-'}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 px-4">
-                          {member.positionName || '-'}
+                          {editingMemberId === member.id ? (
+                            <div className="flex items-center gap-1">
+                              <Select value={editOrg.positionId ? String(editOrg.positionId) : 'none'} onValueChange={(v) => setEditOrg(prev => ({ ...prev, positionId: v === 'none' ? null : Number(v) }))}>
+                                <SelectTrigger className="h-8 w-[100px] text-xs"><SelectValue placeholder="선택" /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">-</SelectItem>
+                                  {positions?.map((p: any) => <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" variant="ghost" className="h-8 px-2 text-xs text-primary" onClick={() => updateOrganization.mutate({ userId: member.id, ...editOrg })} disabled={updateOrganization.isPending}>
+                                저장
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={() => setEditingMemberId(null)}>
+                                취소
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="cursor-pointer hover:text-primary hover:underline" onClick={() => { setEditingMemberId(member.id); setEditOrg({ divisionId: member.divisionId, teamId: member.teamId, positionId: member.positionId }); }}>
+                              {member.positionName || '-'}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 px-4">
                           <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
