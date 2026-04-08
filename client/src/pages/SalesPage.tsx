@@ -778,10 +778,8 @@ export default function SalesPage() {
     const record = salesData?.find((s: any) => s.division === division && s.productGroup === productGroup);
     const recordTarget = record?.monthlyTarget ?? 0;
     const bpTarget = businessPlanTargets[division] || 0;
-    // 4월 이후: 사업계획 목표 우선, 3월 이전: 개별 항목 목표 우선
-    const target = month >= 4
-      ? (bpTarget > 0 ? bpTarget : recordTarget)
-      : (recordTarget > 0 ? recordTarget : bpTarget);
+    // 사업계획 목표가 있으면 항상 우선 사용
+    const target = bpTarget > 0 ? bpTarget : recordTarget;
     if (target === 0) return '0.0';
     const cumulative = calculateCumulative(division, productGroup);
     return ((cumulative / target) * 100).toFixed(1);
@@ -826,15 +824,9 @@ export default function SalesPage() {
     });
     // 사업계획 대분류 목표
     const bpTarget = businessPlanTargets[division] || 0;
-    // 4월 이후: 사업계획 목표를 기본으로 사용, 매출관리에서 직접 수정한 값이 있으면 그것을 사용
-    // 3월 이전: 개별 항목 목표 합산 우선, 없으면 사업계획 목표
+    // 사업계획 목표가 있으면 항상 우선 사용, 없으면 개별 항목 합산
     let target: number;
-    if (month >= 4) {
-      // 사업계획 목표가 있으면 우선 사용, 없으면 개별 항목 합산
-      target = bpTarget > 0 ? bpTarget : itemTargetSum;
-    } else {
-      target = itemTargetSum > 0 ? itemTargetSum : bpTarget;
-    }
+    target = bpTarget > 0 ? bpTarget : itemTargetSum;
     const cumulative = week1 + week2 + week3 + week4 + week5;
     const rate = target > 0 ? ((cumulative / target) * 100).toFixed(1) : '0.0';
 
