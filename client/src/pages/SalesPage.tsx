@@ -775,11 +775,13 @@ export default function SalesPage() {
   };
 
   const calculateAchievementRate = (division: string, productGroup: string) => {
-    // 개별 항목(productGroup)의 monthlyTarget을 우선 사용
     const record = salesData?.find((s: any) => s.division === division && s.productGroup === productGroup);
     const recordTarget = record?.monthlyTarget ?? 0;
-    // 개별 항목 목표가 있으면 사용, 없으면 사업계획 대분류 목표 사용
-    const target = recordTarget > 0 ? recordTarget : (businessPlanTargets[division] || 0);
+    const bpTarget = businessPlanTargets[division] || 0;
+    // 4월 이후: 사업계획 목표 우선, 3월 이전: 개별 항목 목표 우선
+    const target = month >= 4
+      ? (bpTarget > 0 ? bpTarget : recordTarget)
+      : (recordTarget > 0 ? recordTarget : bpTarget);
     if (target === 0) return '0.0';
     const cumulative = calculateCumulative(division, productGroup);
     return ((cumulative / target) * 100).toFixed(1);
@@ -816,14 +818,23 @@ export default function SalesPage() {
       week5 += weekData.week5 ?? 0;
     });
 
-    // 개별 항목의 monthlyTarget 합산을 우선 사용, 없으면 사업계획 대분류 목표 사용
+    // 개별 항목의 monthlyTarget 합산
     let itemTargetSum = 0;
     items.forEach(item => {
       const record = salesData?.find((s: any) => s.division === division && s.productGroup === item);
       itemTargetSum += record?.monthlyTarget ?? 0;
     });
-    // 개별 항목 목표 합산이 있으면 사용, 없으면 사업계획 대분류 목표 사용
-    let target = itemTargetSum > 0 ? itemTargetSum : (businessPlanTargets[division] || 0);
+    // 사업계획 대분류 목표
+    const bpTarget = businessPlanTargets[division] || 0;
+    // 4월 이후: 사업계획 목표를 기본으로 사용, 매출관리에서 직접 수정한 값이 있으면 그것을 사용
+    // 3월 이전: 개별 항목 목표 합산 우선, 없으면 사업계획 목표
+    let target: number;
+    if (month >= 4) {
+      // 사업계획 목표가 있으면 우선 사용, 없으면 개별 항목 합산
+      target = bpTarget > 0 ? bpTarget : itemTargetSum;
+    } else {
+      target = itemTargetSum > 0 ? itemTargetSum : bpTarget;
+    }
     const cumulative = week1 + week2 + week3 + week4 + week5;
     const rate = target > 0 ? ((cumulative / target) * 100).toFixed(1) : '0.0';
 

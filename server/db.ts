@@ -3029,8 +3029,11 @@ export async function getWeeklySalesSummary(
   divisionMap.forEach((data, division) => {
     const itemTargetSum = divisionMonthlyTargets.get(division) || 0;
     const bpTarget = businessPlanTargets[division] || 0;
-    // 개별 항목 monthlyTarget 합산이 있으면 우선 사용, 없으면 사업계획 대분류 목표 사용
-    const finalTarget = itemTargetSum > 0 ? itemTargetSum : bpTarget;
+    // 4월 이후: 사업계획 목표 우선 사용, 없으면 개별 항목 합산
+    // 3월 이전: 개별 항목 monthlyTarget 합산 우선, 없으면 사업계획 목표
+    const finalTarget = month >= 4
+      ? (bpTarget > 0 ? bpTarget : itemTargetSum)
+      : (itemTargetSum > 0 ? itemTargetSum : bpTarget);
     data.target = finalTarget;
     targetTotal += finalTarget;
   });
