@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  LineChart, Line, Cell, PieChart, Pie
+  LineChart, Line, Cell, PieChart, Pie, ComposedChart
 } from 'recharts';
 
 // 사업부 매핑
@@ -1406,6 +1406,51 @@ export default function BusinessPlanPage() {
                 </div>
               </div>
             </div>
+
+            {/* 매출 월별 목표 대비 달성률 그래프 */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-indigo-500" />
+                  월별 매출 목표 대비 달성률
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart
+                      data={Array.from({ length: 12 }, (_, i) => {
+                        const planVal = revenuePlanTotals.months[i] || 0;
+                        const actualVal = calculateActualTotals.months[i] || 0;
+                        const rate = planVal > 0 ? Math.round((actualVal / planVal) * 100) : 0;
+                        return {
+                          month: `${i + 1}월`,
+                          목표: Math.round(planVal / 10000),
+                          실적: Math.round(actualVal / 10000),
+                          달성률: rate,
+                        };
+                      })}
+                      margin={{ top: 10, right: 40, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 10000).toFixed(0)}억`} />
+                      <YAxis yAxisId="right" orientation="right" domain={[0, 200]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
+                      <Tooltip
+                        formatter={(value: number, name: string) => {
+                          if (name === '달성률') return [`${value}%`, name];
+                          return [`${(value / 10000).toFixed(1)}억원 (${value.toLocaleString()}만원)`, name];
+                        }}
+                      />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="목표" fill="#cbd5e1" name="목표" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="left" dataKey="실적" fill="#6366f1" name="실적" radius={[4, 4, 0, 0]} />
+                      <Line yAxisId="right" type="monotone" dataKey="달성률" stroke="#f59e0b" strokeWidth={2.5} name="달성률(%)" dot={{ fill: '#f59e0b', r: 4 }} activeDot={{ r: 6 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
         
