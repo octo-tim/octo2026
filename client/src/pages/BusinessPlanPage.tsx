@@ -818,9 +818,9 @@ export default function BusinessPlanPage() {
       total: 0,
     };
     
-    // 대분류만 합산 (소분류 제외)
+    // 대분류만 합산 (소분류 제외, 리코코 제외)
     filteredData
-      .filter(item => !item.subDivision)
+      .filter(item => !item.subDivision && item.division !== 'ricoco')
       .forEach(item => {
         totals.months[0] += Number(item.month1) || 0;
         totals.months[1] += Number(item.month2) || 0;
@@ -847,9 +847,9 @@ export default function BusinessPlanPage() {
       total: 0,
     };
     
-    // 대분류만 합산 (소분류 제외)
+    // 대분류만 합산 (소분류 제외, 리코코 제외)
     revenueData
-      .filter(item => !item.subDivision)
+      .filter(item => !item.subDivision && item.division !== 'ricoco')
       .forEach(item => {
         for (let i = 1; i <= 12; i++) {
           totals.months[i - 1] += getActualValue(item.division, null, i);
@@ -868,7 +868,7 @@ export default function BusinessPlanPage() {
     };
     
     revenueData
-      .filter(item => !item.subDivision)
+      .filter(item => !item.subDivision && item.division !== 'ricoco')
       .forEach(item => {
         totals.months[0] += Number(item.month1) || 0;
         totals.months[1] += Number(item.month2) || 0;
