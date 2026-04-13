@@ -146,6 +146,7 @@ export default function FinancialPage() {
   const createMutation = trpc.financial.createRecord.useMutation({
     onSuccess: () => {
       utils.financial.getRecords.invalidate({ year, month });
+      utils.financial.getYearlySummary.invalidate({ year });
       toast.success('항목이 추가되었습니다.');
       setIsRecordModalOpen(false);
       resetForm();
@@ -156,6 +157,7 @@ export default function FinancialPage() {
   const updateMutation = trpc.financial.updateRecord.useMutation({
     onSuccess: () => {
       utils.financial.getRecords.invalidate({ year, month });
+      utils.financial.getYearlySummary.invalidate({ year });
       toast.success('항목이 수정되었습니다.');
       setIsRecordModalOpen(false);
       resetForm();
@@ -166,6 +168,7 @@ export default function FinancialPage() {
   const deleteMutation = trpc.financial.deleteRecord.useMutation({
     onSuccess: () => {
       utils.financial.getRecords.invalidate({ year, month });
+      utils.financial.getYearlySummary.invalidate({ year });
       toast.success('항목이 삭제되었습니다.');
       setIsDeleteDialogOpen(false);
       setDeletingRecord(null);
@@ -176,6 +179,7 @@ export default function FinancialPage() {
   const setBalanceMutation = trpc.financial.setBalance.useMutation({
     onSuccess: () => {
       utils.financial.getBalance.invalidate({ year, month });
+      utils.financial.getYearlySummary.invalidate({ year });
       toast.success('기초잔액이 설정되었습니다.');
       setIsBalanceModalOpen(false);
     },
@@ -185,6 +189,7 @@ export default function FinancialPage() {
   const bulkUploadMutation = trpc.financial.bulkUpload.useMutation({
     onSuccess: (result) => {
       utils.financial.getRecords.invalidate({ year, month });
+      utils.financial.getYearlySummary.invalidate({ year });
       toast.success(`${result.count}건의 데이터가 업로드되었습니다.`);
       setIsUploadModalOpen(false);
       setUploadPreview([]);
