@@ -97,7 +97,7 @@ const SALES_FRAMES = {
   },
   제조공급: {
     division: 'manufacturing',
-    items: ['리코코', '크림하우스', '기타'],
+    items: ['리코코', '에르모어', '크림하우스', '기타'],
     label: '브랜드'
   },
   리코코: {
@@ -333,6 +333,7 @@ export default function SalesPage() {
       'shushuvi': '슈슈비',
       'etc': '기타',
       'linkmom': '링크맘',
+      'hermor': '에르모어',
       'ricoco': '리코코',
       'creamhouse': '크림하우스',
       'oem_etc': '기타',
