@@ -4710,7 +4710,8 @@ export async function getContractBusinessPlanAllMonthlyActuals(
  * 각 채널/서브채널별로 1~12월의 실적을 반환
  */
 export async function getContractRecordsYearlyActuals(
-  year: number
+  year: number,
+  brand: string = 'bombom'
 ): Promise<Array<{ channel: string; subChannel: string | null; monthlyActuals: Record<number, number> }>> {
   const db = await getDb();
   if (!db) {
@@ -4718,9 +4719,9 @@ export async function getContractRecordsYearlyActuals(
     return [];
   }
 
-  // 해당 연도의 모든 계약 데이터 조회
+  // 해당 연도 + 브랜드의 모든 계약 데이터 조회
   const records = await db.select().from(contractRecords)
-    .where(eq(contractRecords.year, year));
+    .where(and(eq(contractRecords.year, year), eq(contractRecords.brand, brand)));
 
   // channel + subChannel별로 월별 실적 합계 계산
   const actualsMap: Record<string, Record<number, number>> = {};

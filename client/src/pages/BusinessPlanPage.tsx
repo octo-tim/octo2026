@@ -262,9 +262,9 @@ export default function BusinessPlanPage() {
     { enabled: !!user }
   );
   
-  // 매출관리 계약현황에서 연간 월별 실적 조회
+  // 매출관리 계약현황에서 연간 월별 실적 조회 (봉봉시공)
   const { data: contractYearlyActuals } = trpc.contractBusinessPlan.getYearlyActuals.useQuery(
-    { year: selectedYear },
+    { year: selectedYear, brand: 'bombom' },
     { enabled: !!user }
   );
   

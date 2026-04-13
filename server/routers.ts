@@ -2073,9 +2073,10 @@ export const appRouter = router({
     getYearlyActuals: protectedProcedure
       .input(z.object({
         year: z.number(),
+        brand: z.string().default('bombom'),
       }))
       .query(async ({ input }) => {
-        return await getContractRecordsYearlyActuals(input.year);
+        return await getContractRecordsYearlyActuals(input.year, input.brand);
       }),
   }),
 
