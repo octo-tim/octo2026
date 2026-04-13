@@ -258,6 +258,13 @@ export default function SalesPage() {
     return [...(lastMonthBombomContractData || []), ...(lastMonthRicocoContractData || [])];
   }, [lastMonthBombomContractData, lastMonthRicocoContractData]);
 
+  // 계약현황 전월실적 자동 계산 (전월 데이터의 주차별 합계)
+  const getContractPreviousMonth = useCallback((brand: string, channel: string, subChannel: string): number => {
+    const record = lastMonthContractData?.find((c: any) => c.brand === brand && c.channel === channel && c.subChannel === subChannel);
+    if (!record) return 0;
+    return (record.week1Count ?? 0) + (record.week2Count ?? 0) + (record.week3Count ?? 0) + (record.week4Count ?? 0) + (record.week5Count ?? 0);
+  }, [lastMonthContractData]);
+
   // 주단위 매출 요약 조회
   const { data: weeklySummary, refetch: refetchWeeklySummary } = trpc.sales.weeklySummary.useQuery({
     year,
@@ -505,7 +512,7 @@ export default function SalesPage() {
               brand,
               channel,
               subChannel,
-              previousMonthCount: existingRecord?.previousMonthCount ?? 0,
+              previousMonthCount: getContractPreviousMonth(brand, channel, subChannel),
               monthlyTarget: existingRecord?.monthlyTarget ?? 0,
               week1Count: weekData.week1,
               week2Count: weekData.week2,
@@ -591,7 +598,7 @@ export default function SalesPage() {
     subChannels.forEach(subChannel => {
       const record = contractData?.find((c: any) => c.brand === brand && c.channel === channel && c.subChannel === subChannel);
       data[subChannel] = {
-        previousMonth: record?.previousMonthCount ?? 0,
+        previousMonth: getContractPreviousMonth(brand, channel, subChannel),
         target: record?.monthlyTarget ?? 0,
       };
     });
@@ -839,7 +846,7 @@ export default function SalesPage() {
     
     subChannels.forEach(subChannel => {
       const record = contractData?.find((c: any) => c.brand === brand && c.channel === channel && c.subChannel === subChannel);
-      previousMonth += record?.previousMonthCount ?? 0;
+      previousMonth += getContractPreviousMonth(brand, channel, subChannel);
       target += record?.monthlyTarget ?? 0;
       
       const key = `${brand}-${channel}-${subChannel}`;
@@ -1081,7 +1088,7 @@ export default function SalesPage() {
         subChannels.forEach(subChannel => {
           const record = contractData.find((c: any) => c.brand === brand && c.channel === channelName && c.subChannel === subChannel);
           if (record) {
-            lastMonthTotal += record.previousMonthCount ?? 0;
+            lastMonthTotal += getContractPreviousMonth(brand, channelName, subChannel);
           }
         });
       }
@@ -1112,7 +1119,7 @@ export default function SalesPage() {
           subChannels.forEach(subChannel => {
             const record = contractData.find((c: any) => c.brand === brand && c.channel === channelName && c.subChannel === subChannel);
             if (record) {
-              lastMonthTotal += record.previousMonthCount ?? 0;
+              lastMonthTotal += getContractPreviousMonth(brand, channelName, subChannel);
             }
           });
         }
@@ -1387,7 +1394,7 @@ export default function SalesPage() {
                       </TableCell>
                     )}
                     <TableCell>{subChannel}</TableCell>
-                    <TableCell className="text-right font-mono">{formatNumber(record?.previousMonthCount)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatNumber(getContractPreviousMonth(brand, "내부채널", subChannel))}</TableCell>
                     <TableCell className="text-right font-mono">{formatNumber(record?.monthlyTarget)}</TableCell>
                     <TableCell className={inputCellStyle}>
                       <Input
@@ -1474,7 +1481,7 @@ export default function SalesPage() {
                       </TableCell>
                     )}
                     <TableCell>{subChannel}</TableCell>
-                    <TableCell className="text-right font-mono">{formatNumber(record?.previousMonthCount)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatNumber(getContractPreviousMonth(brand, "외부채널", subChannel))}</TableCell>
                     <TableCell className="text-right font-mono">{formatNumber(record?.monthlyTarget)}</TableCell>
                     <TableCell className={inputCellStyle}>
                       <Input
