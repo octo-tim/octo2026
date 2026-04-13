@@ -7,7 +7,7 @@
  * - 계약현황 (내부채널, 외부채널)
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { MainLayout } from '@/components/MainLayout';
