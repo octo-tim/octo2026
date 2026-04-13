@@ -821,9 +821,10 @@ export default function SalesPage() {
   const calculateAchievementRate = (division: string, productGroup: string) => {
     const record = salesData?.find((s: any) => s.division === division && s.productGroup === productGroup);
     const recordTarget = record?.monthlyTarget ?? 0;
-    const bpTarget = businessPlanTargets[division] || 0;
-    // 사업계획 목표가 있으면 항상 우선 사용
-    const target = bpTarget > 0 ? bpTarget : recordTarget;
+    // 소분류(개별 항목) 목표 우선, 없으면 대분류(사업부) 목표
+    const bpItemTarget = businessPlanTargets[`${division}-${productGroup}`] || 0;
+    const bpDivTarget = businessPlanTargets[division] || 0;
+    const target = bpItemTarget > 0 ? bpItemTarget : (bpDivTarget > 0 ? bpDivTarget : recordTarget);
     if (target === 0) return '0.0';
     const cumulative = calculateCumulative(division, productGroup);
     return ((cumulative / target) * 100).toFixed(1);
