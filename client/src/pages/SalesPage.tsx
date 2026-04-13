@@ -265,6 +265,21 @@ export default function SalesPage() {
     return (record.week1Count ?? 0) + (record.week2Count ?? 0) + (record.week3Count ?? 0) + (record.week4Count ?? 0) + (record.week5Count ?? 0);
   }, [lastMonthContractData]);
 
+  // 계약현황 사업계획 목표 조회
+  const { data: contractBusinessPlanData } = trpc.contractBusinessPlan.getByYear.useQuery(
+    { year },
+    { enabled: true }
+  );
+
+  // 계약현황 사업계획 목표 가져오기 (해당 월)
+  const getContractPlanTarget = useCallback((channel: string, subChannel: string): number => {
+    if (!contractBusinessPlanData) return 0;
+    const plan = contractBusinessPlanData.find((p: any) => p.channel === channel && p.subChannel === subChannel);
+    if (!plan) return 0;
+    const monthKey = `month${month}` as string;
+    return Number((plan as any)[monthKey]) || 0;
+  }, [contractBusinessPlanData, month]);
+
   // 주단위 매출 요약 조회
   const { data: weeklySummary, refetch: refetchWeeklySummary } = trpc.sales.weeklySummary.useQuery({
     year,
@@ -597,9 +612,10 @@ export default function SalesPage() {
     const data: Record<string, { previousMonth: number; target: number }> = {};
     subChannels.forEach(subChannel => {
       const record = contractData?.find((c: any) => c.brand === brand && c.channel === channel && c.subChannel === subChannel);
+      const bpTarget = getContractPlanTarget(channel, subChannel);
       data[subChannel] = {
         previousMonth: getContractPreviousMonth(brand, channel, subChannel),
-        target: record?.monthlyTarget ?? 0,
+        target: bpTarget > 0 ? bpTarget : (record?.monthlyTarget ?? 0),
       };
     });
     setContractSetupData(data);
@@ -800,7 +816,8 @@ export default function SalesPage() {
 
   const calculateContractAchievementRate = (brand: string, channel: string, subChannel: string | null) => {
     const record = contractData?.find((c: any) => c.brand === brand && c.channel === channel && c.subChannel === subChannel);
-    const target = record?.monthlyTarget ?? 0;
+    const bpTarget = subChannel ? getContractPlanTarget(channel, subChannel) : 0;
+    const target = bpTarget > 0 ? bpTarget : (record?.monthlyTarget ?? 0);
     if (target === 0) return '0.0';
     const cumulative = calculateContractCumulative(brand, channel, subChannel);
     return ((cumulative / target) * 100).toFixed(1);
@@ -847,7 +864,9 @@ export default function SalesPage() {
     subChannels.forEach(subChannel => {
       const record = contractData?.find((c: any) => c.brand === brand && c.channel === channel && c.subChannel === subChannel);
       previousMonth += getContractPreviousMonth(brand, channel, subChannel);
-      target += record?.monthlyTarget ?? 0;
+      // 사업계획 목표 우선, 없으면 개별 레코드의 monthlyTarget 사용
+      const bpTarget = getContractPlanTarget(channel, subChannel);
+      target += bpTarget > 0 ? bpTarget : (record?.monthlyTarget ?? 0);
       
       const key = `${brand}-${channel}-${subChannel}`;
       const weekData = contractInputs[key] || { week1: 0, week2: 0, week3: 0, week4: 0, week5: 0 };
@@ -1395,7 +1414,7 @@ export default function SalesPage() {
                     )}
                     <TableCell>{subChannel}</TableCell>
                     <TableCell className="text-right font-mono">{formatNumber(getContractPreviousMonth(brand, "내부채널", subChannel))}</TableCell>
-                    <TableCell className="text-right font-mono">{formatNumber(record?.monthlyTarget)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatNumber(getContractPlanTarget('내부채널', subChannel) || record?.monthlyTarget)}</TableCell>
                     <TableCell className={inputCellStyle}>
                       <Input
                         type="text"
@@ -1482,7 +1501,7 @@ export default function SalesPage() {
                     )}
                     <TableCell>{subChannel}</TableCell>
                     <TableCell className="text-right font-mono">{formatNumber(getContractPreviousMonth(brand, "외부채널", subChannel))}</TableCell>
-                    <TableCell className="text-right font-mono">{formatNumber(record?.monthlyTarget)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatNumber(getContractPlanTarget('외부채널', subChannel) || record?.monthlyTarget)}</TableCell>
                     <TableCell className={inputCellStyle}>
                       <Input
                         type="text"
