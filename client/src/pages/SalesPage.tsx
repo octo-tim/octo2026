@@ -502,7 +502,7 @@ export default function SalesPage() {
             month,
             division: config.division,
             productGroup: item,
-            previousMonthSales: existingRecord?.previousMonthSales ?? 0,
+            previousMonthSales: getPreviousMonthSales(config.division, item),
             monthlyTarget: existingRecord?.monthlyTarget ?? 0,
             week1Sales: weekData.week1,
             week2Sales: weekData.week2,
@@ -558,7 +558,7 @@ export default function SalesPage() {
       config.items.forEach(item => {
         const record = salesData?.find((s: any) => s.division === config.division && s.productGroup === item);
         data[item] = {
-          previousMonth: record?.previousMonthSales ?? 0,
+          previousMonth: getPreviousMonthSales(config.division, item),
           target: record?.monthlyTarget ?? 0
         };
       });
