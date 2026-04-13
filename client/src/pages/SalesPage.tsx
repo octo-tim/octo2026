@@ -308,7 +308,7 @@ export default function SalesPage() {
     { enabled: true }
   );
 
-  // 사업계획 월별 목표 데이터 정리 (division별)
+  // 사업계획 월별 목표 데이터 정리 (division별 + productGroup별)
   const businessPlanTargets = useMemo(() => {
     const result: Record<string, number> = {
       'bombom': 0,
@@ -324,17 +324,37 @@ export default function SalesPage() {
       'oem_supply': 'manufacturing',
       'ricoco': 'ricoco',
     };
+
+    // 사업계획 subDivision → 매출관리 productGroup 매핑
+    const subDivisionMapping: Record<string, string> = {
+      'headquarters': '본사',
+      'branch': '지사',
+      'bombom': '봄봄',
+      'shushuvi': '슈슈비',
+      'etc': '기타',
+      'linkmom': '링크맘',
+      'ricoco': '리코코',
+      'creamhouse': '크림하우스',
+      'oem_etc': '기타',
+    };
     
     if (businessPlanData) {
-      // 매출 카테고리의 대분류(소분류가 null)만 조회
       businessPlanData.forEach(plan => {
-        if (plan.category === 'revenue' && !plan.subDivision) {
+        if (plan.category === 'revenue') {
           const salesDivision = divisionMapping[plan.division];
           if (salesDivision) {
-            // 해당 월의 목표 값 가져오기
             const monthKey = `month${month}` as keyof typeof plan;
             const monthValue = Number(plan[monthKey]) || 0;
-            result[salesDivision] = monthValue;
+            if (!plan.subDivision) {
+              // 대분류 목표
+              result[salesDivision] = monthValue;
+            } else {
+              // 소분류 목표 (division-productGroup 키)
+              const productGroup = subDivisionMapping[plan.subDivision];
+              if (productGroup) {
+                result[`${salesDivision}-${productGroup}`] = monthValue;
+              }
+            }
           }
         }
       });
@@ -557,9 +577,10 @@ export default function SalesPage() {
       const data: Record<string, { previousMonth: number; target: number }> = {};
       config.items.forEach(item => {
         const record = salesData?.find((s: any) => s.division === config.division && s.productGroup === item);
+        const bpItemTarget = businessPlanTargets[`${config.division}-${item}`] || 0;
         data[item] = {
           previousMonth: getPreviousMonthSales(config.division, item),
-          target: record?.monthlyTarget ?? 0
+          target: bpItemTarget > 0 ? bpItemTarget : (record?.monthlyTarget ?? 0)
         };
       });
       setSetupData(data);
@@ -1267,7 +1288,7 @@ export default function SalesPage() {
                   <TableRow key={item}>
                     <TableCell className="font-medium">{item}</TableCell>
                     <TableCell className="text-right font-mono">{formatNumber(getPreviousMonthSales(config.division, item))}</TableCell>
-                    <TableCell className="text-right font-mono">{formatNumber(record?.monthlyTarget)}</TableCell>
+                    <TableCell className="text-right font-mono">{formatNumber(businessPlanTargets[`${config.division}-${item}`] || record?.monthlyTarget)}</TableCell>
                     <TableCell className={inputCellStyle}>
                       <Input
                         type="text"
