@@ -377,14 +377,22 @@ export default function SalesPage() {
     return result;
   }, [prevMonthBusinessPlanActuals]);
 
-  // 전월실적 값 가져오기 - 사업계획 실적 우선, 없으면 salesData의 previousMonthSales 사용
+  // 전월실적 값 가져오기 - 전월 매출레코드의 주차별 합계 우선, 없으면 사업계획 실적
   const getPreviousMonthSales = (division: string, productGroup: string): number => {
+    // 1. 전월 매출레코드(lastMonthSalesData)에서 주차별 합계 계산
+    if (lastMonthSalesData) {
+      const prevRecord = lastMonthSalesData.find((s: any) => s.division === division && s.productGroup === productGroup);
+      if (prevRecord) {
+        const total = (prevRecord.week1Sales ?? 0) + (prevRecord.week2Sales ?? 0) + (prevRecord.week3Sales ?? 0) + (prevRecord.week4Sales ?? 0) + (prevRecord.week5Sales ?? 0);
+        if (total > 0) return total;
+      }
+    }
+    // 2. 사업계획 실적에서 가져오기
     const key = `${division}-${productGroup}`;
-    // 사업계획 실적에서 가져오기
-    if (businessPlanPrevMonthActuals[key] !== undefined) {
+    if (businessPlanPrevMonthActuals[key] !== undefined && businessPlanPrevMonthActuals[key] > 0) {
       return businessPlanPrevMonthActuals[key];
     }
-    // 사업계획에 없으면 salesData의 previousMonthSales 사용
+    // 3. 현재 월 레코드의 previousMonthSales 필드
     const record = salesData?.find((s: any) => s.division === division && s.productGroup === productGroup);
     return record?.previousMonthSales ?? 0;
   };
