@@ -117,6 +117,7 @@ export default function FinancialPage() {
 
   // 업로드 모달 상태
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadWeek, setUploadWeek] = useState<number>(1);
   const [uploadPreview, setUploadPreview] = useState<Array<{
     week: number;
     category: string;
@@ -421,9 +422,8 @@ export default function FinancialPage() {
 
           if (!dateObj || isNaN(dateObj.getTime())) continue;
 
-          // 주차 계산 (1일~7일: 1주차, 8일~14일: 2주차, ...)
-          const day = dateObj.getDate();
-          const week = Math.min(Math.ceil(day / 7), 5);
+          // 주차 계산 - 사용자가 선택한 주차 사용
+          const week = uploadWeek;
 
           // 구분(입금/출금) 및 금액 파싱
           let txType: 'income' | 'expense' | null = null;
@@ -502,7 +502,7 @@ export default function FinancialPage() {
     reader.readAsArrayBuffer(file);
     // 파일 입력 초기화
     e.target.value = '';
-  }, []);
+  }, [uploadWeek]);
 
   // 업로드 실행
   const handleUploadSubmit = () => {
@@ -1077,6 +1077,23 @@ export default function FinancialPage() {
               <div className="text-sm text-muted-foreground">
                 <p><strong>{year}년 {month}월</strong>에 입출금 데이터를 업로드합니다.</p>
                 <p className="mt-1">EBS003M 형식의 엑셀 파일을 업로드해주세요. (일자, 구분, 계좌명, 금액 열 포함)</p>
+              </div>
+
+              {/* 주차 선택 */}
+              <div>
+                <Label className="text-sm font-medium">주차 선택</Label>
+                <Select value={String(uploadWeek)} onValueChange={(v) => setUploadWeek(Number(v))}>
+                  <SelectTrigger className="mt-1.5 w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1주차</SelectItem>
+                    <SelectItem value="2">2주차</SelectItem>
+                    <SelectItem value="3">3주차</SelectItem>
+                    <SelectItem value="4">4주차</SelectItem>
+                    <SelectItem value="5">5주차</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* 파일 선택 */}
