@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import {
@@ -216,16 +217,32 @@ export default function FinancialPage() {
     else setMonth(month + 1);
   };
 
+  // 내부거래 식별 (옥토아이앤씨 계좌 간 이체)
+  const isInternalTransaction = useCallback((record: any): boolean => {
+    const desc = (record.description || '');
+    return desc.includes('옥토') || desc.toLowerCase().includes('octo');
+  }, []);
+
+  // 내부거래 제외 토글
+  const [excludeInternal, setExcludeInternal] = useState(true);
+
+  // 내부거래 필터링된 레코드
+  const filteredRecords = useMemo(() => {
+    if (!records) return [];
+    if (!excludeInternal) return records;
+    return records.filter((r: any) => !isInternalTransaction(r));
+  }, [records, excludeInternal, isInternalTransaction]);
+
   // 주차별 집계
   const weeklyData = useMemo(() => {
-    if (!records) return [];
+    if (!filteredRecords || filteredRecords.length === 0) return [];
     return WEEKS.map(week => {
-      const weekRecords = records.filter((r: any) => r.week === week);
+      const weekRecords = filteredRecords.filter((r: any) => r.week === week);
       const income = weekRecords.filter((r: any) => r.type === 'income').reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
       const expense = weekRecords.filter((r: any) => r.type === 'expense').reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
       return { week, income, expense, net: income - expense, records: weekRecords };
     });
-  }, [records]);
+  }, [filteredRecords]);
 
   // 전체 집계
   const totals = useMemo(() => {
@@ -616,6 +633,17 @@ export default function FinancialPage() {
               <Upload className="w-4 h-4" />
               엑셀 업로드
             </Button>
+            {/* 내부거래 제외 토글 */}
+            <div className="flex items-center gap-2 ml-2">
+              <Switch
+                id="exclude-internal"
+                checked={excludeInternal}
+                onCheckedChange={setExcludeInternal}
+              />
+              <Label htmlFor="exclude-internal" className="text-sm text-muted-foreground cursor-pointer whitespace-nowrap">
+                내부거래 제외
+              </Label>
+            </div>
 
             {/* 월 선택 */}
             <Button variant="outline" size="icon" onClick={goToPrevMonth}>
