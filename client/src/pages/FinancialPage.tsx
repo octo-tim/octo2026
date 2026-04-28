@@ -217,11 +217,29 @@ export default function FinancialPage() {
     else setMonth(month + 1);
   };
 
-  // 내부거래 식별 (옥토아이앤씨 계좌 간 이체)
-  const isInternalTransaction = useCallback((record: any): boolean => {
-    const desc = (record.description || '');
-    return desc.includes('옥토') || desc.toLowerCase().includes('octo');
-  }, []);
+  // 내부거래 식별 (옥토아이앤씨 계좌 간 이체 - 동일 금액 입금+출금 쌍)
+  const internalTransactionIds = useMemo(() => {
+    if (!records) return new Set<string>();
+    const ids = new Set<string>();
+    // 옥토/octo 키워드가 포함된 레코드만 대상
+    const octoRecords = records.filter((r: any) => {
+      const desc = (r.description || '');
+      return desc.includes('옥토') || desc.toLowerCase().includes('octo');
+    });
+    const octoIncomes = octoRecords.filter((r: any) => r.type === 'income');
+    const octoExpenses = octoRecords.filter((r: any) => r.type === 'expense');
+    const usedExpenseIds = new Set<string>();
+    // 동일 금액의 입금+출금 쌍 찾기
+    octoIncomes.forEach((inc: any) => {
+      const matchExp = octoExpenses.find((exp: any) => !usedExpenseIds.has(exp.id) && exp.amount === inc.amount);
+      if (matchExp) {
+        ids.add(inc.id);
+        ids.add(matchExp.id);
+        usedExpenseIds.add(matchExp.id);
+      }
+    });
+    return ids;
+  }, [records]);
 
   // 내부거래 제외 토글
   const [excludeInternal, setExcludeInternal] = useState(true);
@@ -230,8 +248,8 @@ export default function FinancialPage() {
   const filteredRecords = useMemo(() => {
     if (!records) return [];
     if (!excludeInternal) return records;
-    return records.filter((r: any) => !isInternalTransaction(r));
-  }, [records, excludeInternal, isInternalTransaction]);
+    return records.filter((r: any) => !internalTransactionIds.has(r.id));
+  }, [records, excludeInternal, internalTransactionIds]);
 
   // 주차별 집계
   const weeklyData = useMemo(() => {
