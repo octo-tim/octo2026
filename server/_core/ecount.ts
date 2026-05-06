@@ -13,7 +13,7 @@
  * ├──────────┼──────────┼───────────────────────────────────────────────┤
  * │ online   │ 봄봄     │ 거래처그룹1 = "A-3 봄봄 온라인"               │
  * │ online   │ 슈슈비   │ 거래처그룹1 = "E-2 슈슈비-온라인"              │
- * │ online   │ 기타     │ 거래처그룹1 = "G. 수출"                        │
+ * │ manufact │ 수출     │ 거래처그룹1 = "G. 수출"                        │
  * ├──────────┼──────────┼───────────────────────────────────────────────┤
  * │ manufact │ 리코코   │ 거래처그룹1="B. 매트공급", 품목그룹2 포함 "리코코"│
  * │ manufact │ 크림하우스│ 거래처그룹1="B. 매트공급", 품목그룹2 포함 "크림하우스"│
@@ -127,9 +127,7 @@ function mapToSalesEntries(rows: ParsedRow[]): SalesEntry[] {
     if (key.includes("E-2") || key.includes("슈슈비")) {
       entries.push({ division: "online", productGroup: "슈슈비", salesAmount: amount });
     }
-    if (key.includes("G.") || key.includes("수출")) {
-      entries.push({ division: "online", productGroup: "기타", salesAmount: amount });
-    }
+    // G. 수출은 manufacturing(제조공급)으로 분류 - 아래 제조공급 섹션에서 처리
   }
 
   // ─── 제조공급 (manufacturing) ───
@@ -164,6 +162,14 @@ function mapToSalesEntries(rows: ParsedRow[]): SalesEntry[] {
     }
   }
 
+  // G. 수출 → 제조공급 / 거래처명 = 수출
+  let exportAmt = 0;
+  for (const [key, amount] of Object.entries(groupTotals)) {
+    if (key.includes('G.') || (key.includes('수출') && !key.includes('봄봄') && !key.includes('A-'))) {
+      exportAmt += amount;
+    }
+  }
+  entries.push({ division: 'manufacturing', productGroup: '수출', salesAmount: exportAmt });
   entries.push({ division: "manufacturing", productGroup: "리코코", salesAmount: ricocoAmt });
   entries.push({ division: "manufacturing", productGroup: "크림하우스", salesAmount: creamhouseAmt });
   entries.push({ division: "manufacturing", productGroup: "에르모어", salesAmount: ermoreAmt });
