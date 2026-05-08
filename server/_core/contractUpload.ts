@@ -39,6 +39,7 @@ const CHANNEL_MAP: Record<string, { channel: string; subChannel: string }> = {
   '인플루언서공구': { channel: '외부채널', subChannel: '인플루언서공구' },
   '입주박람회': { channel: '외부채널', subChannel: '입주박람회' },
   '지사자체상담': { channel: '외부채널', subChannel: '지사자체상담' },
+  '에르모어공동구매': { channel: '외부채널', subChannel: '에르모어공동구매' },
 };
 
 interface ParsedChannel {
