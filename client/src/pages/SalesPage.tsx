@@ -1489,7 +1489,7 @@ export default function SalesPage() {
                       <Input
                         type="text"
                         value={formatNumber(weekData.week5 || 0)}
-                        onChange={(e) => handleContractInput(brand, 'week4', subChannel, 'week5', e.target.value)}
+                        onChange={(e) => handleContractInput(brand, '내부채널', subChannel, 'week5', e.target.value)}
                         className="h-7 text-right font-mono text-sm bg-transparent border-0 focus:ring-1 focus:ring-pink-400"
                         placeholder="0"
                         disabled={!canEditSales}
@@ -1576,7 +1576,7 @@ export default function SalesPage() {
                       <Input
                         type="text"
                         value={formatNumber(weekData.week5 || 0)}
-                        onChange={(e) => handleContractInput(brand, 'week4', subChannel, 'week5', e.target.value)}
+                        onChange={(e) => handleContractInput(brand, '외부채널', subChannel, 'week5', e.target.value)}
                         className="h-7 text-right font-mono text-sm bg-transparent border-0 focus:ring-1 focus:ring-pink-400"
                         placeholder="0"
                         disabled={!canEditSales}
