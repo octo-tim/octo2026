@@ -275,6 +275,11 @@ export function registerEcountRoutes(app: Express) {
       let upserted = 0;
 
       try {
+        // 동일 주차 기존 데이터 초기화 (새 업로드로 대체)
+        await conn.execute(
+          `UPDATE sales_records SET ${weekField} = NULL, updatedAt = NOW() WHERE year = ? AND month = ?`,
+          [year, month]
+        );
         for (const entry of entries) {
           const id = uuidv4();
           // UPSERT: division + productGroup + year + month 기준
