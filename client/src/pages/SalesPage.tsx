@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, ChevronLeft, ChevronRight, Save, Plus, Pencil, Trash2, MessageSquare, Edit3 } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Save, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { SalesCalendar } from '@/components/SalesCalendar';
@@ -286,16 +286,6 @@ export default function SalesPage() {
     month,
   });
 
-  // 이달의 한마디 조회
-  const { data: monthlyMessage, refetch: refetchMonthlyMessage } = trpc.monthlyMessage.get.useQuery({
-    year,
-    month,
-  });
-
-  // 이달의 한마디 state
-  const [isEditingMessage, setIsEditingMessage] = useState(false);
-  const [messageInput, setMessageInput] = useState('');
-
   // 사업계획에서 월별 매출 목표 조회
   const { data: businessPlanData } = trpc.businessPlan.getByYear.useQuery(
     { year },
@@ -408,16 +398,6 @@ export default function SalesPage() {
   const upsertContractMutation = trpc.contract.upsert.useMutation({
     onSuccess: () => {
       refetchContracts();
-    },
-    onError: (err) => toast.error('저장 실패: ' + err.message),
-  });
-
-  // 이달의 한마디 mutation
-  const upsertMessageMutation = trpc.monthlyMessage.upsert.useMutation({
-    onSuccess: () => {
-      toast.success('이달의 한마디가 저장되었습니다.');
-      refetchMonthlyMessage();
-      setIsEditingMessage(false);
     },
     onError: (err) => toast.error('저장 실패: ' + err.message),
   });
@@ -1665,106 +1645,6 @@ export default function SalesPage() {
           </div>
         ) : (
           <>
-            {/* 이달의 한마디 */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-yellow-950/20 rounded-2xl border border-amber-200/60 dark:border-amber-800/60 p-6 shadow-sm">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-200/30 to-transparent rounded-bl-full"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-orange-200/20 to-transparent rounded-tr-full"></div>
-              <div className="relative flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl shadow-md shadow-amber-200/50 dark:shadow-amber-900/50">
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-amber-900 dark:text-amber-100">이달의 한마디</h2>
-                    <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">{year}년 {month}월</p>
-                  </div>
-                </div>
-                {canEditSales && !isEditingMessage && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/50"
-                    onClick={() => {
-                      setMessageInput(monthlyMessage?.message || '');
-                      setIsEditingMessage(true);
-                    }}
-                  >
-                    <Edit3 className="w-4 h-4 mr-1" />
-                    {monthlyMessage ? '수정' : '작성'}
-                  </Button>
-                )}
-              </div>
-              
-              {isEditingMessage ? (
-                <div className="mt-4 space-y-3">
-                  <Textarea
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    placeholder="이번 달 매출 목표, 주요 전략, 팀원들에게 전하고 싶은 메시지를 작성해주세요..."
-                    className="min-h-[100px] bg-white dark:bg-gray-800 border-amber-200 dark:border-amber-700"
-                    maxLength={1000}
-                  />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-amber-600 dark:text-amber-400">
-                      {messageInput.length}/1000자
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setIsEditingMessage(false);
-                          setMessageInput('');
-                        }}
-                      >
-                        취소
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          if (messageInput.trim()) {
-                            upsertMessageMutation.mutate({
-                              year,
-                              month,
-                              message: messageInput.trim(),
-                            });
-                          }
-                        }}
-                        disabled={!messageInput.trim() || upsertMessageMutation.isPending}
-                        className="bg-amber-600 hover:bg-amber-700 text-white"
-                      >
-                        {upsertMessageMutation.isPending && (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        )}
-                        저장
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4">
-                  {monthlyMessage?.message ? (
-                    <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-5 border border-amber-100/80 dark:border-amber-800/80 shadow-sm">
-                      <div className="absolute top-3 left-4 text-4xl text-amber-200 dark:text-amber-800 font-serif leading-none select-none">&ldquo;</div>
-                      <p className="text-foreground whitespace-pre-wrap leading-relaxed pl-6 pt-2 text-[15px]">
-                        {monthlyMessage.message}
-                      </p>
-                      {monthlyMessage.authorName && (
-                        <p className="mt-4 text-sm font-medium text-amber-600 dark:text-amber-400 text-right italic">
-                          &mdash; {monthlyMessage.authorName}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 border border-dashed border-amber-300 dark:border-amber-700 text-center">
-                      <p className="text-amber-600 dark:text-amber-400">
-                        아직 작성된 메시지가 없습니다.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
 
             {/* 주단위 전체 매출 요약 */}
             {weeklySummary && (
